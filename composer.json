@@ -1,0 +1,27 @@
+{
+	"name": "digbang/doctrine",
+	"description": "Tools and configurations to use Doctrine ORM inside Laravel in Digbang.",
+	"require": {
+		"doctrine/orm": "dev-embeddables-in-metadata-builder",
+		"illuminate/cache": "~4.2",
+		"illuminate/config": "~4.2",
+		"illuminate/support": "~4.2",
+		"illuminate/container": "~4.2"
+	},
+	"require-dev": {
+		"phpunit/phpunit": "~4.0",
+		"maximebf/debugbar": "~1.10"
+	},
+	"autoload": {
+		"psr-4": {
+			"Digbang\\Doctrine\\": "src/"
+		}
+	},
+    "repositories": [
+		{
+		  "type": "vcs",
+		  "url": "git@github.com:guiwoda/doctrine2.git"
+		}
+  	],
+	"license": "proprietary"
+}
