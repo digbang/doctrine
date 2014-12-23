@@ -317,6 +317,22 @@ class Builder
 	}
 
 	/**
+	 * Sets single table inheritance on the entity.
+	 * @param $typeColumn
+	 *
+	 * @return $this
+	 * @see http://doctrine-orm.readthedocs.org/en/latest/reference/inheritance-mapping.html#single-table-inheritance
+	 */
+	public function inheritance($typeColumn)
+	{
+		$this->metadataBuilder
+			->setSingleTableInheritance()
+			->setDiscriminatorColumn($typeColumn);
+
+		return $this;
+	}
+
+	/**
 	 * Adds a manyToOne relation to the entity.
 	 *
 	 * A callback can be passed as a third parameter. If so, the callback will
