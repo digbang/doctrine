@@ -48,14 +48,14 @@ class Builder
 	 */
 	public function primary($name = 'id', $type = 'integer')
 	{
-		return $this->field($name, $type, function(FieldBuilder $fieldBuilder) use ($type) {
-			$fieldBuilder->isPrimaryKey();
+		return $this->field($type, $name, function (FieldBuilder $fieldBuilder) use ($type) {
+            $fieldBuilder->isPrimaryKey();
 
-			if ('integer' == $type)
-			{
-				$fieldBuilder->generatedValue();
-			}
-		});
+            if ('integer' == $type)
+            {
+                $fieldBuilder->generatedValue();
+            }
+        });
 	}
 
 	/**
@@ -65,7 +65,7 @@ class Builder
 	 */
 	public function bigint($name)
 	{
-		return $this->field($name, Type::BIGINT);
+		return $this->field(Type::BIGINT, $name);
 	}
 
 	/**
@@ -75,7 +75,7 @@ class Builder
 	 */
 	public function boolean($name)
 	{
-		return $this->field($name, Type::BOOLEAN);
+		return $this->field(Type::BOOLEAN, $name);
 	}
 
 	/**
@@ -85,7 +85,7 @@ class Builder
 	 */
 	public function datetime($name)
 	{
-		return $this->field($name, Type::DATETIME);
+		return $this->field(Type::DATETIME, $name);
 	}
 
 	/**
@@ -95,7 +95,7 @@ class Builder
 	 */
 	public function datetimetz($name)
 	{
-		return $this->field($name, Type::DATETIMETZ);
+		return $this->field(Type::DATETIMETZ, $name);
 	}
 
 	/**
@@ -105,7 +105,7 @@ class Builder
 	 */
 	public function date($name)
 	{
-		return $this->field($name, Type::DATE);
+		return $this->field(Type::DATE, $name);
 	}
 
 	/**
@@ -115,7 +115,7 @@ class Builder
 	 */
 	public function time($name)
 	{
-		return $this->field($name, Type::TIME);
+		return $this->field(Type::TIME, $name);
 	}
 
 	/**
@@ -125,7 +125,7 @@ class Builder
 	 */
 	public function decimal($name)
 	{
-		return $this->field($name, Type::DECIMAL);
+		return $this->field(Type::DECIMAL, $name);
 	}
 
 	/**
@@ -135,7 +135,7 @@ class Builder
 	 */
 	public function integer($name)
 	{
-		return $this->field($name, Type::INTEGER);
+		return $this->field(Type::INTEGER, $name);
 	}
 
 	/**
@@ -145,7 +145,7 @@ class Builder
 	 */
 	public function object($name)
 	{
-		return $this->field($name, Type::OBJECT);
+		return $this->field(Type::OBJECT, $name);
 	}
 
 	/**
@@ -155,7 +155,7 @@ class Builder
 	 */
 	public function smallint($name)
 	{
-		return $this->field($name, Type::SMALLINT);
+		return $this->field(Type::SMALLINT, $name);
 	}
 
 	/**
@@ -165,7 +165,7 @@ class Builder
 	 */
 	public function string($name)
 	{
-		return $this->field($name, Type::STRING);
+		return $this->field(Type::STRING, $name);
 	}
 
 	/**
@@ -175,7 +175,7 @@ class Builder
 	 */
 	public function text($name)
 	{
-		return $this->field($name, Type::TEXT);
+		return $this->field(Type::TEXT, $name);
 	}
 
 	/**
@@ -185,7 +185,7 @@ class Builder
 	 */
 	public function binary($name)
 	{
-		return $this->field($name, Type::BINARY);
+		return $this->field(Type::BINARY, $name);
 	}
 
 	/**
@@ -195,7 +195,7 @@ class Builder
 	 */
 	public function blob($name)
 	{
-		return $this->field($name, Type::BLOB);
+		return $this->field(Type::BLOB, $name);
 	}
 
 	/**
@@ -205,7 +205,7 @@ class Builder
 	 */
 	public function float($name)
 	{
-		return $this->field($name, Type::FLOAT);
+		return $this->field(Type::FLOAT, $name);
 	}
 
 	/**
@@ -215,7 +215,7 @@ class Builder
 	 */
 	public function guid($name)
 	{
-		return $this->field($name, Type::GUID);
+		return $this->field(Type::GUID, $name);
 	}
 
 	/**
@@ -258,13 +258,13 @@ class Builder
 	}
 
 	/**
-	 * @param string $name
-	 * @param string $type
+	 * @param string        $type
+	 * @param string        $name
 	 * @param callable|null $callback
 	 *
 	 * @return $this
 	 */
-	public function field($name, $type, \Closure $callback = null)
+	public function field($type, $name, \Closure $callback = null)
 	{
 		$fieldBuilder = $this->metadataBuilder
 			->createField($name, $type);
