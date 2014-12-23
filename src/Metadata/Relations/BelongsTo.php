@@ -34,6 +34,13 @@ class BelongsTo extends Relation implements RelationInterface
 		return $this;
 	}
 
+	public function isPrimaryKey()
+	{
+		$this->associationBuilder->isPrimaryKey();
+
+		return $this;
+	}
+
 	/**
 	 * @return void
 	 */
