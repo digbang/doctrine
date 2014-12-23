@@ -16,6 +16,20 @@ class BelongsToMany extends Relation implements RelationInterface
         );
     }
 
+    public function mappedBy($fieldName)
+    {
+        $this->associationBuilder->mappedBy($fieldName);
+
+        return $this;
+    }
+
+    public function inversedBy($fieldName)
+    {
+        $this->associationBuilder->inversedBy($fieldName);
+
+        return $this;
+    }
+
     public function foreignKeys($foreignKey, $references = 'id')
     {
         $this->associationBuilder->addJoinColumn($foreignKey, $references, false);
