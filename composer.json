@@ -2,7 +2,7 @@
 	"name": "digbang/doctrine",
 	"description": "Tools and configurations to use Doctrine ORM inside Laravel in Digbang.",
 	"require": {
-		"doctrine/orm": "dev-embeddables-in-metadata-builder",
+		"doctrine/orm": "dev-woda",
 		"illuminate/cache": "~4.2",
 		"illuminate/config": "~4.2",
 		"illuminate/support": "~4.2",
