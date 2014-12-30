@@ -88,7 +88,7 @@ class ConfigurationDriver implements MappingDriver
 	{
 		$this->loadFromConfig();
 
-		return array_key_exists($className, $this->entities);
+		return ! array_key_exists($className, $this->entities);
 	}
 
 	private function loadFromConfig()
