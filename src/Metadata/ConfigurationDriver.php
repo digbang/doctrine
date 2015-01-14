@@ -91,16 +91,27 @@ class ConfigurationDriver implements MappingDriver
 		return ! array_key_exists($className, $this->entities);
 	}
 
+	/**
+	 * Loads all entityMappings from the package configuration file
+	 */
 	private function loadFromConfig()
 	{
 		if (null === $this->entities)
 		{
-			$this->entities = $this->config->get('doctrine::mappings.entities', []);
+			foreach ($this->config->get('doctrine::mappings.entities', []) as $entityMapping)
+			{
+				/** @type $entityMapping EntityMapping */
+				$this->entities[$entityMapping::getEntityName()] = $entityMapping;
+			}
 		}
 
 		if (null === $this->embeddables)
 		{
-			$this->embeddables = $this->config->get('doctrine::mappings.embeddables', []);
+			foreach ($this->config->get('doctrine::mappings.embeddables', []) as $entityMapping)
+			{
+				/** @type $entityMapping EntityMapping */
+				$this->embeddables[$entityMapping::getEntityName()] = $entityMapping;
+			}
 		}
 	}
 

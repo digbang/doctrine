@@ -10,10 +10,10 @@ return [
 	// This maps entities to their EntityMapping mapping class
 	// -------------------------------------
 	'entities' => [
-		'Acme\Entities\User' => 'Acme\Mappings\UserMapping'
+		'Acme\Mappings\UserMapping'
 	],
 	'embeddables' => [
-
+		'Acme\Mappings\DateIntervalMapping'
 	]
 ];
  
