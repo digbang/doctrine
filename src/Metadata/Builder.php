@@ -6,6 +6,7 @@ use Digbang\Doctrine\Metadata\Relations\HasMany;
 use Digbang\Doctrine\Metadata\Relations\HasOne;
 use Digbang\Doctrine\Metadata\Relations\RelationInterface;
 use Doctrine\DBAL\Types\Type;
+use Doctrine\ORM\Events;
 use Doctrine\ORM\Mapping\Builder\ClassMetadataBuilder;
 use Doctrine\ORM\Mapping\Builder\FieldBuilder;
 use Illuminate\Support\Str;
@@ -234,7 +235,7 @@ class Builder
 	 */
 	public function createdAt()
 	{
-		$this->metadataBuilder->addLifecycleEvent('onPrePersist', 'prePersist');
+		$this->metadataBuilder->addLifecycleEvent('onPrePersist', Events::prePersist);
 
 		return $this->datetime('createdAt');
 	}
@@ -244,7 +245,7 @@ class Builder
 	 */
 	public function updatedAt()
 	{
-		$this->metadataBuilder->addLifecycleEvent('onPreUpdate', 'preUpdate');
+		$this->metadataBuilder->addLifecycleEvent('onPreUpdate', Events::preUpdate);
 
 		return $this->datetime('updatedAt');
 	}
