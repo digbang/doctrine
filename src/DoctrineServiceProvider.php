@@ -28,7 +28,7 @@ class DoctrineServiceProvider extends ServiceProvider
 		// bind the EM interface to our only EM as a singleton
 		$this->app->singleton(EntityManagerInterface::class, EntityManager::class);
 
-		// bind the EM concrete (should I use a factory here?)
+		// bind the EM concrete
 		$this->app->singleton(EntityManager::class, function(Container $app) {
 			/** @type \Illuminate\Config\Repository $config */
 			$config = $app['config'];
@@ -84,20 +84,6 @@ class DoctrineServiceProvider extends ServiceProvider
 			}
 
 			return EntityManager::create($conn, $configuration);
-		});
-	}
-
-	private function registerShutdownHandler()
-	{
-		// Flush EM if left open (?)
-		$this->app->shutdown(function(\Illuminate\Container\Container $app){
-			/** @type EntityManagerInterface $em */
-			$em = $app->make(EntityManagerInterface::class);
-
-			if ($em->isOpen())
-			{
-				$em->flush();
-			}
 		});
 	}
 

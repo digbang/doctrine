@@ -2,7 +2,7 @@
 	"name": "digbang/doctrine",
 	"description": "Tools and configurations to use Doctrine ORM inside Laravel in Digbang.",
 	"require": {
-		"doctrine/orm": "dev-woda",
+		"doctrine/orm": "2.5.*@dev",
 		"illuminate/cache": "~4.2",
 		"illuminate/config": "~4.2",
 		"illuminate/support": "~4.2",
@@ -17,11 +17,7 @@
 			"Digbang\\Doctrine\\": "src/"
 		}
 	},
-    "repositories": [
-		{
-		  "type": "vcs",
-		  "url": "git@github.com:guiwoda/doctrine2.git"
-		}
-  	],
-	"license": "proprietary"
+	"license": "proprietary",
+	"minimum-stability": "dev",
+	"prefer-stable": true
 }
