@@ -97,7 +97,7 @@ class DoctrineServiceProvider extends ServiceProvider
 
 	public function boot()
 	{
-		$this->package('digbang/doctrine', null, dirname(__DIR__));
+		$this->package('digbang/doctrine', null, realpath(__DIR__));
 	}
 }
  
