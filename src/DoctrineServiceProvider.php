@@ -8,6 +8,7 @@ use Illuminate\Support\ServiceProvider;
 use Doctrine\ORM\EntityManagerInterface;
 use Digbang\Doctrine\Metadata\ConfigurationDriver;
 use Digbang\Doctrine\Configuration\DatabaseConfigurationBridge;
+use Mitch\LaravelDoctrine\Console;
 
 class DoctrineServiceProvider extends ServiceProvider
 {
@@ -21,6 +22,13 @@ class DoctrineServiceProvider extends ServiceProvider
 		$this->registerEntityManager();
 
 		$this->registerShutdownHandler();
+
+		$this->commands([
+			Console\GenerateProxiesCommand::class,
+			Console\SchemaCreateCommand::class,
+			Console\SchemaUpdateCommand::class,
+			Console\SchemaDropCommand::class
+		]);
 	}
 
 	private function registerEntityManager()
