@@ -20,15 +20,6 @@ class DoctrineServiceProvider extends ServiceProvider
 	public function register()
 	{
 		$this->registerEntityManager();
-
-		$this->registerShutdownHandler();
-
-		$this->commands([
-			Console\GenerateProxiesCommand::class,
-			Console\SchemaCreateCommand::class,
-			Console\SchemaUpdateCommand::class,
-			Console\SchemaDropCommand::class
-		]);
 	}
 
 	private function registerEntityManager()
@@ -98,6 +89,13 @@ class DoctrineServiceProvider extends ServiceProvider
 	public function boot()
 	{
 		$this->package('digbang/doctrine', null, realpath(__DIR__));
+
+		$this->commands([
+			Console\GenerateProxiesCommand::class,
+			Console\SchemaCreateCommand::class,
+			Console\SchemaUpdateCommand::class,
+			Console\SchemaDropCommand::class
+		]);
 	}
 }
  
