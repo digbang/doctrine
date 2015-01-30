@@ -1,8 +1,8 @@
 <?php
 return [
-	'enabled' => false,
+	'enabled'   => false,
 	'hydration' => true,
-	'query' => true,
-	'result' => true,
-	'metadata' => true
+	'query'     => true,
+	'result'    => true,
+	'metadata'  => true
 ];
