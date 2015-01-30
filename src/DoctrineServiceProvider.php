@@ -6,6 +6,7 @@ use Digbang\Doctrine\Cache\Bridge;
 use Illuminate\Container\Container;
 use Illuminate\Support\ServiceProvider;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Mapping\ClassMetadataFactory;
 use Digbang\Doctrine\Metadata\ConfigurationDriver;
 use Digbang\Doctrine\Configuration\DatabaseConfigurationBridge;
 use Mitch\LaravelDoctrine\Console;
@@ -20,6 +21,7 @@ class DoctrineServiceProvider extends ServiceProvider
 	public function register()
 	{
 		$this->registerEntityManager();
+		$this->registerClassMetadataFactory();
 	}
 
 	private function registerEntityManager()
@@ -83,6 +85,13 @@ class DoctrineServiceProvider extends ServiceProvider
 			}
 
 			return EntityManager::create($conn, $configuration);
+		});
+	}
+
+	private function registerClassMetadataFactory()
+	{
+		$this->app->singleton(ClassMetadataFactory::class, function ($app) {
+			return $app[EntityManager::class]->getMetadataFactory();
 		});
 	}
 
