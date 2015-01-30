@@ -2,7 +2,7 @@
 
 use Doctrine\ORM\Mapping\Builder\ClassMetadataBuilder;
 
-class HasMany extends Relation implements RelationInterface
+class HasMany extends Relation
 {
 	/**
 	 * @type array
@@ -12,18 +12,6 @@ class HasMany extends Relation implements RelationInterface
 	public function __construct(ClassMetadataBuilder $metadataBuilder, $entityName, $relation)
 	{
 		$this->associationBuilder = $metadataBuilder->createOneToMany($relation, $entityName);
-	}
-
-	/**
-	 * @param string $mappingRelation
-	 *
-	 * @return $this
-	 */
-	public function mappedBy($mappingRelation)
-	{
-		$this->associationBuilder->mappedBy($mappingRelation);
-
-		return $this;
 	}
 
 	/**
@@ -39,13 +27,5 @@ class HasMany extends Relation implements RelationInterface
 		$this->associationBuilder->setOrderBy($this->orderColumns);
 
 		return $this;
-	}
-
-	/**
-	 * @return void
-	 */
-	public function build()
-	{
-		$this->associationBuilder->build();
 	}
 }

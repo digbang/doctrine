@@ -1,32 +1,54 @@
 <?php namespace Digbang\Doctrine\Metadata;
 
-use Digbang\Doctrine\Metadata\Relations\BelongsTo;
-use Digbang\Doctrine\Metadata\Relations\BelongsToMany;
-use Digbang\Doctrine\Metadata\Relations\HasMany;
-use Digbang\Doctrine\Metadata\Relations\HasOne;
-use Digbang\Doctrine\Metadata\Relations\RelationInterface;
+use Closure;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\Events;
 use Doctrine\ORM\Mapping\Builder\ClassMetadataBuilder;
 use Doctrine\ORM\Mapping\Builder\FieldBuilder;
-use Illuminate\Support\Str;
 
-class Builder 
+/**
+ * Builder around Doctrine's ClassMetadataBuilder.
+ *
+ * @package Digbang\Doctrine\Metadata
+ *
+ * @method $this getClassMetadata();
+ * @method $this setMappedSuperClass()
+ * @method $this setCustomRepositoryClass($repositoryClassName)
+ * @method $this setReadOnly()
+ * @method $this setTable($name)
+ * @method $this addIndex(array $columns, $name)
+ * @method $this addUniqueConstraint(array $columns, $name)
+ * @method $this addNamedQuery($name, $dqlQuery)
+ * @method $this setJoinedTableInheritance()
+ * @method $this setSingleTableInheritance()
+ * @method $this setDiscriminatorColumn($name, $type = 'string', $length = 255)
+ * @method $this addDiscriminatorMapClass($name, $class)
+ * @method $this setChangeTrackingPolicyDeferredExplicit()
+ * @method $this setChangeTrackingPolicyNotify()
+ * @method $this addLifecycleEvent($methodName, $event)
+ * @method $this addField($name, $type, array $mapping = [])
+ * @method $this createField($name, $type)
+ * @method $this addManyToOne($name, $targetEntity, $inversedBy = null)
+ * @method $this createManyToOne($name, $targetEntity)
+ * @method $this createOneToOne($name, $targetEntity)
+ * @method $this addInverseOneToOne($name, $targetEntity, $mappedBy)
+ * @method $this addOwningOneToOne($name, $targetEntity, $inversedBy = null)
+ * @method $this createManyToMany($name, $targetEntity)
+ * @method $this addOwningManyToMany($name, $targetEntity, $inversedBy = null)
+ * @method $this addInverseManyToMany($name, $targetEntity, $mappedBy)
+ * @method $this createOneToMany($name, $targetEntity)
+ * @method $this addOneToMany($name, $targetEntity, $mappedBy)
+ */
+class Builder
 {
 	/**
 	 * @type \Doctrine\ORM\Mapping\Builder\ClassMetadataBuilder
 	 */
 	private $metadataBuilder;
 
-	/**
-	 * @type \Illuminate\Support\Str
-	 */
-	private $str;
-
-	function __construct(ClassMetadataBuilder $metadataBuilder, Str $str)
+	public function __construct(ClassMetadataBuilder $metadataBuilder)
 	{
 		$this->metadataBuilder = $metadataBuilder;
-		$this->str = $str;
 	}
 
 	/**
@@ -47,12 +69,12 @@ class Builder
 	 *
 	 * @return $this
 	 */
-	public function primary($name = 'id', $type = 'integer')
+	public function primary($name = 'id', $type = Type::BIGINT)
 	{
 		return $this->field($type, $name, function (FieldBuilder $fieldBuilder) use ($type) {
             $fieldBuilder->isPrimaryKey();
 
-            if ('integer' == $type)
+            if ($this->isInteger($type))
             {
                 $fieldBuilder->generatedValue();
             }
@@ -61,162 +83,178 @@ class Builder
 
 	/**
 	 * @param string $name
+	 * @param callable|null $callback
 	 *
 	 * @return $this
 	 */
-	public function bigint($name)
+	public function bigint($name, Closure $callback = null)
 	{
-		return $this->field(Type::BIGINT, $name);
+		return $this->field(Type::BIGINT, $name, $callback);
 	}
 
 	/**
 	 * @param string $name
+	 * @param callable|null $callback
 	 *
 	 * @return $this
 	 */
-	public function boolean($name)
+	public function boolean($name, Closure $callback = null)
 	{
-		return $this->field(Type::BOOLEAN, $name);
+		return $this->field(Type::BOOLEAN, $name, $callback);
 	}
 
 	/**
 	 * @param string $name
+	 * @param callable|null $callback
 	 *
 	 * @return $this
 	 */
-	public function datetime($name)
+	public function datetime($name, Closure $callback = null)
 	{
-		return $this->field(Type::DATETIME, $name);
+		return $this->field(Type::DATETIME, $name, $callback);
 	}
 
 	/**
 	 * @param string $name
+	 * @param callable|null $callback
 	 *
 	 * @return $this
 	 */
-	public function datetimetz($name)
+	public function datetimetz($name, Closure $callback = null)
 	{
-		return $this->field(Type::DATETIMETZ, $name);
+		return $this->field(Type::DATETIMETZ, $name, $callback);
 	}
 
 	/**
 	 * @param string $name
+	 * @param callable|null $callback
 	 *
 	 * @return $this
 	 */
-	public function date($name)
+	public function date($name, Closure $callback = null)
 	{
-		return $this->field(Type::DATE, $name);
+		return $this->field(Type::DATE, $name, $callback);
 	}
 
 	/**
 	 * @param string $name
+	 * @param callable|null $callback
 	 *
 	 * @return $this
 	 */
-	public function time($name)
+	public function time($name, Closure $callback = null)
 	{
-		return $this->field(Type::TIME, $name);
+		return $this->field(Type::TIME, $name, $callback);
 	}
 
 	/**
 	 * @param string $name
+	 * @param callable|null $callback
 	 *
 	 * @return $this
 	 */
-	public function decimal($name)
+	public function decimal($name, Closure $callback = null)
 	{
-		return $this->field(Type::DECIMAL, $name);
+		return $this->field(Type::DECIMAL, $name, $callback);
 	}
 
 	/**
 	 * @param string $name
+	 * @param callable|null $callback
 	 *
 	 * @return $this
 	 */
-	public function integer($name)
+	public function integer($name, Closure $callback = null)
 	{
-		return $this->field(Type::INTEGER, $name);
+		return $this->field(Type::INTEGER, $name, $callback);
 	}
 
 	/**
 	 * @param string $name
+	 * @param callable|null $callback
 	 *
 	 * @return $this
 	 */
-	public function object($name)
+	public function object($name, Closure $callback = null)
 	{
-		return $this->field(Type::OBJECT, $name);
+		return $this->field(Type::OBJECT, $name, $callback);
 	}
 
 	/**
 	 * @param string $name
+	 * @param callable|null $callback
 	 *
 	 * @return $this
 	 */
-	public function smallint($name)
+	public function smallint($name, Closure $callback = null)
 	{
-		return $this->field(Type::SMALLINT, $name);
+		return $this->field(Type::SMALLINT, $name, $callback);
 	}
 
 	/**
 	 * @param string $name
+	 * @param callable|null $callback
 	 *
 	 * @return $this
 	 */
-	public function string($name)
+	public function string($name, Closure $callback = null)
 	{
-		return $this->field(Type::STRING, $name);
+		return $this->field(Type::STRING, $name, $callback);
 	}
 
 	/**
 	 * @param string $name
+	 * @param callable|null $callback
 	 *
 	 * @return $this
 	 */
-	public function text($name)
+	public function text($name, Closure $callback = null)
 	{
-		return $this->field(Type::TEXT, $name);
+		return $this->field(Type::TEXT, $name, $callback);
 	}
 
 	/**
 	 * @param string $name
+	 * @param callable|null $callback
 	 *
 	 * @return $this
 	 */
-	public function binary($name)
+	public function binary($name, Closure $callback = null)
 	{
-		return $this->field(Type::BINARY, $name);
+		return $this->field(Type::BINARY, $name, $callback);
 	}
 
 	/**
 	 * @param string $name
+	 * @param callable|null $callback
 	 *
 	 * @return $this
 	 */
-	public function blob($name)
+	public function blob($name, Closure $callback = null)
 	{
-		return $this->field(Type::BLOB, $name);
+		return $this->field(Type::BLOB, $name, $callback);
 	}
 
 	/**
 	 * @param string $name
+	 * @param callable|null $callback
 	 *
 	 * @return $this
 	 */
-	public function float($name)
+	public function float($name, Closure $callback = null)
 	{
-		return $this->field(Type::FLOAT, $name);
+		return $this->field(Type::FLOAT, $name, $callback);
 	}
 
 	/**
-	 * @param string $name
+	 * @param string   $name
+	 * @param callable|null $callback
 	 *
 	 * @return $this
 	 */
-	public function guid($name)
+	public function guid($name, Closure $callback = null)
 	{
-		return $this->field(Type::GUID, $name);
+		return $this->field(Type::GUID, $name, $callback);
 	}
 
 	/**
@@ -265,10 +303,9 @@ class Builder
 	 *
 	 * @return $this
 	 */
-	public function field($type, $name, \Closure $callback = null)
+	public function field($type, $name, Closure $callback = null)
 	{
-		$fieldBuilder = $this->metadataBuilder
-			->createField($name, $type);
+		$fieldBuilder = $this->metadataBuilder->createField($name, $type);
 
 		if ($callback)
 		{
@@ -319,9 +356,10 @@ class Builder
 
 	/**
 	 * Sets single table inheritance on the entity.
-	 * @param $typeColumn
 	 *
+	 * @param string $typeColumn
 	 * @return $this
+	 *
 	 * @see http://doctrine-orm.readthedocs.org/en/latest/reference/inheritance-mapping.html#single-table-inheritance
 	 */
 	public function inheritance($typeColumn)
@@ -346,10 +384,10 @@ class Builder
 	 *
 	 * @return $this
 	 */
-	public function belongsTo($entityName, $relation, \Closure $callback = null)
+	public function belongsTo($entityName, $relation, Closure $callback = null)
 	{
 		return $this->addRelation(
-			new BelongsTo($this->metadataBuilder, $entityName, $relation),
+			new Relations\BelongsTo($this->metadataBuilder, $entityName, $relation),
 			$callback
 		);
 	}
@@ -367,10 +405,10 @@ class Builder
 	 *
 	 * @return $this
 	 */
-	public function belongsToMany($entityName, $relation, \Closure $callback = null)
+	public function belongsToMany($entityName, $relation, Closure $callback = null)
 	{
 		return $this->addRelation(
-			new BelongsToMany($this->metadataBuilder, $entityName, $relation),
+			new Relations\BelongsToMany($this->metadataBuilder, $entityName, $relation),
 			$callback
 		);
 	}
@@ -388,10 +426,10 @@ class Builder
 	 *
 	 * @return $this
 	 */
-	public function hasMany($entityName, $relation, \Closure $callback = null)
+	public function hasMany($entityName, $relation, Closure $callback = null)
 	{
 		return $this->addRelation(
-			new HasMany($this->metadataBuilder, $entityName, $relation),
+			new Relations\HasMany($this->metadataBuilder, $entityName, $relation),
 			$callback
 		);
 	}
@@ -409,23 +447,25 @@ class Builder
 	 *
 	 * @return $this
 	 */
-	public function hasOne($entityName, $relation, \Closure $callback = null)
+	public function hasOne($entityName, $relation, Closure $callback = null)
 	{
 		return $this->addRelation(
-			new HasOne($this->metadataBuilder, $entityName, $relation),
+			new Relations\HasOne($this->metadataBuilder, $entityName, $relation),
 			$callback
 		);
 	}
 
 	/**
 	 * Adds a custom relation to the entity.
-	 * The relation only needs to implement the RelationInterface
-	 * @param \Digbang\Doctrine\Metadata\Relations\RelationInterface $relation
-	 * @param callable|null                                          $callback
+	 * The relation needs to extend the
+	 * Digbang\Doctrine\Metadata\Relations\Relation abstract class.
+	 *
+	 * @param \Digbang\Doctrine\Metadata\Relations\Relation $relation
+	 * @param callable|null                                 $callback
 	 *
 	 * @return $this
 	 */
-	public function addRelation(RelationInterface $relation, \Closure $callback = null)
+	public function addRelation(Relations\Relation $relation, Closure $callback = null)
 	{
 		if ($callback)
 		{
@@ -440,9 +480,41 @@ class Builder
 	/**
 	 * Get Doctrine's metadata builder object, for full control of the relation build.
 	 * @return ClassMetadataBuilder
+	 *
+	 * @deprecated This object now works as a proxy through the magic __call method.
 	 */
 	public function getMetadataBuilder()
 	{
 		return $this->metadataBuilder;
+	}
+
+	/**
+	 * @param $name
+	 * @param $arguments
+	 *
+	 * @return $this
+	 * @throws \BadMethodCallException
+	 */
+	public function __call($name, $arguments)
+	{
+		if (method_exists($this->metadataBuilder, $name))
+		{
+			call_user_func_array([$this->metadataBuilder, $name], $arguments);
+
+			return $this;
+		}
+
+		throw new \BadMethodCallException("Method '$name' does not exist.");
+	}
+
+	/**
+	 * Check if a given type is any of the possible integer types.
+	 *
+	 * @param string $type
+	 * @return bool
+	 */
+	protected function isInteger($type)
+	{
+		return in_array($type, [Type::INTEGER, Type::BIGINT, Type::SMALLINT]);
 	}
 }

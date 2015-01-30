@@ -2,7 +2,7 @@
 
 use Doctrine\ORM\Mapping\Builder\ClassMetadataBuilder;
 
-class BelongsToMany extends Relation implements RelationInterface
+class BelongsToMany extends Relation
 {
     /**
      * @type array
@@ -14,20 +14,6 @@ class BelongsToMany extends Relation implements RelationInterface
         $this->associationBuilder = $metadataBuilder->createManyToMany(
             $relation, $entityName
         );
-    }
-
-    public function mappedBy($fieldName)
-    {
-        $this->associationBuilder->mappedBy($fieldName);
-
-        return $this;
-    }
-
-    public function inversedBy($fieldName)
-    {
-        $this->associationBuilder->inversedBy($fieldName);
-
-        return $this;
     }
 
     public function foreignKeys($foreignKey, $references = 'id')
@@ -57,13 +43,5 @@ class BelongsToMany extends Relation implements RelationInterface
         $this->associationBuilder->setOrderBy($this->orderColumns);
 
         return $this;
-    }
-
-    /**
-     * @return void
-     */
-    public function build()
-    {
-        $this->associationBuilder->build();
     }
 }

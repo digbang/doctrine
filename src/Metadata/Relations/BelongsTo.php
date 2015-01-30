@@ -2,7 +2,7 @@
 
 use Doctrine\ORM\Mapping\Builder\ClassMetadataBuilder;
 
-class BelongsTo extends Relation implements RelationInterface
+class BelongsTo extends Relation
 {
 	public function __construct(ClassMetadataBuilder $metadataBuilder, $entityName, $relation)
 	{
@@ -23,18 +23,6 @@ class BelongsTo extends Relation implements RelationInterface
 		return $this;
 	}
 
-	/**
-	 * @param string $inverseRelation
-	 *
-	 * @return $this
-	 */
-	public function inversedBy($inverseRelation)
-	{
-		$this->associationBuilder->inversedBy($inverseRelation);
-
-		return $this;
-	}
-
 	/** TODO: When 2.5 integrates this change, we'll be able to use it!
 	public function isPrimaryKey()
 	{
@@ -42,12 +30,4 @@ class BelongsTo extends Relation implements RelationInterface
 
 		return $this;
 	}*/
-
-	/**
-	 * @return void
-	 */
-	public function build()
-	{
-		$this->associationBuilder->build();
-	}
 }
