@@ -12,12 +12,13 @@ class BelongsTo extends Relation implements RelationInterface
 	/**
 	 * @param string $foreignKey
 	 * @param string $otherKey
+	 * @param bool   $nullable
 	 *
 	 * @return $this
 	 */
-	public function keys($foreignKey, $otherKey = 'id')
+	public function keys($foreignKey, $otherKey = 'id', $nullable = false)
 	{
-		$this->associationBuilder->addJoinColumn($foreignKey, $otherKey);
+		$this->associationBuilder->addJoinColumn($foreignKey, $otherKey, $nullable);
 
 		return $this;
 	}
@@ -34,12 +35,13 @@ class BelongsTo extends Relation implements RelationInterface
 		return $this;
 	}
 
+	/** TODO: When 2.5 integrates this change, we'll be able to use it!
 	public function isPrimaryKey()
 	{
 		$this->associationBuilder->isPrimaryKey();
 
 		return $this;
-	}
+	}*/
 
 	/**
 	 * @return void
