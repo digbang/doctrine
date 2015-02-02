@@ -20,14 +20,16 @@ class ConfigurationDriver implements MappingDriver
 	private $container;
 
 	/**
-	 * @type array|null
+	 * @type array
 	 */
-	private $entities;
+	private $entities = [];
 
 	/**
-	 * @type array|null
+	 * @type array
 	 */
-	private $embeddables;
+	private $embeddables = [];
+
+	private $loaded = false;
 
 	function __construct(Repository $config, Container $container)
 	{
@@ -96,22 +98,21 @@ class ConfigurationDriver implements MappingDriver
 	 */
 	private function loadFromConfig()
 	{
-		if (null === $this->entities)
+		if (! $this->loaded)
 		{
 			foreach ($this->config->get('doctrine::mappings.entities', []) as $entityMapping)
 			{
 				/** @type $entityMapping EntityMapping */
 				$this->entities[$entityMapping::getEntityName()] = $entityMapping;
 			}
-		}
 
-		if (null === $this->embeddables)
-		{
 			foreach ($this->config->get('doctrine::mappings.embeddables', []) as $entityMapping)
 			{
 				/** @type $entityMapping EntityMapping */
 				$this->embeddables[$entityMapping::getEntityName()] = $entityMapping;
 			}
+
+			$this->loaded = true;
 		}
 	}
 
