@@ -55,11 +55,12 @@ class DoctrineServiceProvider extends ServiceProvider
 
 	public function boot()
 	{
+		$configPath = $this->app->make('path.config');
 		$this->publishes([
-			__DIR__ . '/config/cache.php' => $this->app->make('config.path') . '/doctrine-cache.php',
-			__DIR__ . '/config/doctrine.php' => $this->app->make('config.path') . '/doctrine.php',
-			__DIR__ . '/config/mappings.php' => $this->app->make('config.path') . '/doctrine-mappings.php',
-			__DIR__ . '/config/repositories.php' => $this->app->make('config.path') . '/doctrine-repositories.php',
+			__DIR__ . '/config/cache.php' => $configPath . '/doctrine-cache.php',
+			__DIR__ . '/config/doctrine.php' => $configPath . '/doctrine.php',
+			__DIR__ . '/config/mappings.php' => $configPath . '/doctrine-mappings.php',
+			__DIR__ . '/config/repositories.php' => $configPath . '/doctrine-repositories.php',
 		], 'config');
 
         $this->registerAuthDriver();
