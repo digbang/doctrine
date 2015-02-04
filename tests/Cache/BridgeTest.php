@@ -23,12 +23,12 @@ class BridgeTest extends PHPUnit_Framework_TestCase
 	protected function setUp()
 	{
 		$this->laravelCache = $this
-			->getMockBuilder(\Illuminate\Cache\Repository::class)
+			->getMockBuilder(\Illuminate\Contracts\Cache\Repository::class)
 			->disableOriginalConstructor()
 			->getMock();
 
 		$this->store = $this
-			->getMockBuilder(\Illuminate\Cache\StoreInterface::class)
+			->getMockBuilder(\Illuminate\Contracts\Cache\Repository::class)
 			->disableOriginalConstructor()
 			->getMock();
 

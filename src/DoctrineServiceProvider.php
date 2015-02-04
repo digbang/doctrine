@@ -3,7 +3,7 @@
 use Doctrine\ORM\Tools\Setup;
 use Doctrine\ORM\EntityManager;
 use Digbang\Doctrine\Cache\Bridge;
-use Illuminate\Container\Container;
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Support\ServiceProvider;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadataFactory;
@@ -20,6 +20,11 @@ class DoctrineServiceProvider extends ServiceProvider
 	 */
 	public function register()
 	{
+		$this->mergeConfigFrom(__DIR__ . '/config/cache.php', 'doctrine-cache');
+		$this->mergeConfigFrom(__DIR__ . '/config/doctrine.php', 'doctrine');
+		$this->mergeConfigFrom(__DIR__ . '/config/mappings.php', 'doctrine-mappings');
+		$this->mergeConfigFrom(__DIR__ . '/config/repositories.php', 'doctrine-repositories');
+
 		$this->registerEntityManager();
 		$this->registerClassMetadataFactory();
 	}
@@ -31,8 +36,8 @@ class DoctrineServiceProvider extends ServiceProvider
 
 		// bind the EM concrete
 		$this->app->singleton(EntityManager::class, function(Container $app) {
-			/** @type \Illuminate\Config\Repository $config */
-			$config = $app['config'];
+			/** @type \Illuminate\Contracts\Config\Repository $config */
+			$config = $app->make('Illuminate\Contracts\Config\Repository');
 
 			$configuration = Setup::createConfiguration(
 				$config->get('app.debug'),
@@ -46,27 +51,27 @@ class DoctrineServiceProvider extends ServiceProvider
 			$configuration->setRepositoryFactory($app->make(RepositoryFactory::class));
 			$configuration->setNamingStrategy($app->make(LaravelNamingStrategy::class));
 
-			if ($config->get('doctrine::cache.enabled'))
+			if ($config->get('doctrine-cache.enabled'))
 			{
 				/** @type Bridge $cacheBridge */
 				$cacheBridge = $app->make(Bridge::class);
 
-				if ($config->get('doctrine::cache.hydration'))
+				if ($config->get('doctrine-cache.hydration'))
 				{
 					$configuration->setHydrationCacheImpl($cacheBridge);
 				}
 
-				if ($config->get('doctrine::cache.query'))
+				if ($config->get('doctrine-cache.query'))
 				{
 					$configuration->setQueryCacheImpl($cacheBridge);
 				}
 
-				if ($config->get('doctrine::cache.result'))
+				if ($config->get('doctrine-cache.result'))
 				{
 					$configuration->setResultCacheImpl($cacheBridge);
 				}
 
-				if ($config->get('doctrine::cache.metadata'))
+				if ($config->get('doctrine-cache.metadata'))
 				{
 					$configuration->setMetadataCacheImpl($cacheBridge);
 				}
@@ -97,7 +102,12 @@ class DoctrineServiceProvider extends ServiceProvider
 
 	public function boot()
 	{
-		$this->package('digbang/doctrine', null, realpath(__DIR__));
+		$this->publishes([
+			__DIR__ . '/config/cache.php' => $this->app->make('config.path') . '/doctrine-cache.php',
+			__DIR__ . '/config/doctrine.php' => $this->app->make('config.path') . '/doctrine.php',
+			__DIR__ . '/config/mappings.php' => $this->app->make('config.path') . '/doctrine-mappings.php',
+			__DIR__ . '/config/repositories.php' => $this->app->make('config.path') . '/doctrine-repositories.php',
+		], 'config');
 
 		$this->commands([
 			Console\GenerateProxiesCommand::class,
