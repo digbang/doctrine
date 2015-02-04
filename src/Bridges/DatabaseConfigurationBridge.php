@@ -1,7 +1,7 @@
 <?php namespace Digbang\Doctrine\Bridges;
 
 use Doctrine\DBAL\Connection;
-use Illuminate\Config\Repository;
+use Illuminate\Contracts\Config\Repository;
 
 class DatabaseConfigurationBridge
 {
@@ -16,7 +16,7 @@ class DatabaseConfigurationBridge
 	];
 
 	/**
-	 * @type \Illuminate\Config\Repository
+	 * @type \Illuminate\Contracts\Config\Repository
 	 */
 	private $config;
 

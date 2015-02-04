@@ -1,6 +1,6 @@
 <?php namespace Digbang\Doctrine\Bridges;
 
-use Illuminate\Cache\Repository;
+use Illuminate\Contracts\Cache\Repository;
 use Doctrine\Common\Cache\CacheProvider;
 
 class CacheBridge extends CacheProvider
@@ -70,7 +70,7 @@ class CacheBridge extends CacheProvider
 	 */
 	protected function doDelete($id)
 	{
-		$this->laravelCache->getStore()->forget($id);
+		$this->laravelCache->forget($id);
 
 		return true;
 	}

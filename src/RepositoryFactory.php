@@ -1,19 +1,19 @@
 <?php namespace Digbang\Doctrine;
 
-use Illuminate\Config\Repository;
-use Illuminate\Container\Container;
+use Illuminate\Contracts\Config\Repository;
+use Illuminate\Contracts\Container\Container;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Repository\RepositoryFactory as RepositoryFactoryInterface;
 
 class RepositoryFactory implements RepositoryFactoryInterface
 {
 	/**
-	 * @type \Illuminate\Container\Container
+	 * @type Container
 	 */
 	private $container;
 
 	/**
-	 * @type \Illuminate\Config\Repository
+	 * @type Repository
 	 */
 	private $config;
 
@@ -33,8 +33,8 @@ class RepositoryFactory implements RepositoryFactoryInterface
 	 */
 	public function getRepository(EntityManagerInterface $entityManager, $entityName)
 	{
-		$namespace = $this->config->get('doctrine::repositories.namespace');
-		$suffix = $this->config->get('doctrine::repositories.suffix', '');
+		$namespace = $this->config->get('doctrine-repositories.namespace');
+		$suffix = $this->config->get('doctrine-repositories.suffix', '');
 		$basename = class_basename($entityName);
 
 		return $this->container->make("$namespace\\{$basename}Repository{$suffix}");

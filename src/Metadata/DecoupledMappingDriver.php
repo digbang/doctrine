@@ -1,8 +1,8 @@
 <?php namespace Digbang\Doctrine\Metadata;
 
 use Doctrine\ORM\EntityManager;
-use Illuminate\Config\Repository;
-use Illuminate\Container\Container;
+use Illuminate\Contracts\Config\Repository;
+use Illuminate\Contracts\Container\Container;
 use Doctrine\ORM\Mapping\Builder\ClassMetadataBuilder;
 use Doctrine\Common\Persistence\Mapping\ClassMetadata;
 use Doctrine\Common\Persistence\Mapping\MappingException;
@@ -16,7 +16,7 @@ class DecoupledMappingDriver implements MappingDriver
 	private $config;
 
 	/**
-	 * @type \Illuminate\Container\Container
+	 * @type Container
 	 */
 	private $container;
 
@@ -110,13 +110,13 @@ class DecoupledMappingDriver implements MappingDriver
 	{
 		if (! $this->loaded)
 		{
-			foreach ($this->config->get('doctrine::mappings.entities', []) as $entityMapping)
+			foreach ($this->config->get('doctrine-mappings.entities', []) as $entityMapping)
 			{
 				/** @type $entityMapping EntityMapping */
 				$this->entities[$entityMapping::getEntityName()] = $entityMapping;
 			}
 
-			foreach ($this->config->get('doctrine::mappings.embeddables', []) as $entityMapping)
+			foreach ($this->config->get('doctrine-mappings.embeddables', []) as $entityMapping)
 			{
 				/** @type $entityMapping EntityMapping */
 				$this->embeddables[$entityMapping::getEntityName()] = $entityMapping;

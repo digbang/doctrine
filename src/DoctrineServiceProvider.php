@@ -12,13 +12,6 @@ use Mitch\LaravelDoctrine\Console;
 
 class DoctrineServiceProvider extends ServiceProvider
 {
-    /**
-     * The application instance.
-     *
-     * @type \Illuminate\Container\Container
-     */
-    protected $app;
-
 	/**
 	 * Register the service provider.
 	 *
@@ -26,6 +19,11 @@ class DoctrineServiceProvider extends ServiceProvider
 	 */
 	public function register()
 	{
+		$this->mergeConfigFrom(__DIR__ . '/config/cache.php', 'doctrine-cache');
+		$this->mergeConfigFrom(__DIR__ . '/config/doctrine.php', 'doctrine');
+		$this->mergeConfigFrom(__DIR__ . '/config/mappings.php', 'doctrine-mappings');
+		$this->mergeConfigFrom(__DIR__ . '/config/repositories.php', 'doctrine-repositories');
+
 		$this->registerEntityManager();
 		$this->registerClassMetadataFactory();
         $this->registerTypes();
@@ -57,7 +55,12 @@ class DoctrineServiceProvider extends ServiceProvider
 
 	public function boot()
 	{
-		$this->package('digbang/doctrine', null, realpath(__DIR__));
+		$this->publishes([
+			__DIR__ . '/config/cache.php' => $this->app->make('config.path') . '/doctrine-cache.php',
+			__DIR__ . '/config/doctrine.php' => $this->app->make('config.path') . '/doctrine.php',
+			__DIR__ . '/config/mappings.php' => $this->app->make('config.path') . '/doctrine-mappings.php',
+			__DIR__ . '/config/repositories.php' => $this->app->make('config.path') . '/doctrine-repositories.php',
+		], 'config');
 
         $this->registerAuthDriver();
 

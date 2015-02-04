@@ -1,8 +1,8 @@
 <?php namespace Tests\Cache;
 
 use Digbang\Doctrine\Bridges\CacheBridge;
-use Illuminate\Cache\Repository;
-use Illuminate\Cache\StoreInterface;
+use Illuminate\Contracts\Cache\Repository;
+use Illuminate\Contracts\Cache\StoreInterface;
 use PHPUnit_Framework_MockObject_MockObject;
 use PHPUnit_Framework_TestCase;
 
@@ -35,7 +35,7 @@ class CacheBridgeTest extends PHPUnit_Framework_TestCase
 			->getMock();
 
 		$this->store = $this
-			->getMockBuilder(StoreInterface::class)
+			->getMockBuilder(Repository::class)
 			->disableOriginalConstructor()
 			->getMock();
 

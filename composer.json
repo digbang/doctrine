@@ -4,18 +4,14 @@
     "license": "proprietary",
     "require": {
         "doctrine/orm":                  "~2.5",
-        "illuminate/cache":              "~4.2",
-        "illuminate/config":             "~4.2",
-        "illuminate/support":            "~4.2",
-        "illuminate/container":          "~4.2",
-        "illuminate/pagination":         "~4.2",
-        "illuminate/auth":               "~4.2",
-        "mitchellvanw/laravel-doctrine": "~0.5"
+        "illuminate/support":            "~5.1",
+        "illuminate/contracts":          "~5.1",
+        "mitchellvanw/laravel-doctrine": "dev-develop"
     },
     "require-dev": {
         "phpunit/phpunit":    "~4.0",
         "maximebf/debugbar":  "~1.10",
-        "illuminate/console": "~4.2"
+        "illuminate/console": "~5.1"
     },
     "autoload": {
         "psr-4": {
