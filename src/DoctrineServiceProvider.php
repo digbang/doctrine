@@ -34,9 +34,13 @@ class DoctrineServiceProvider extends ServiceProvider
 			/** @type \Illuminate\Config\Repository $config */
 			$config = $app['config'];
 
+			/** @type Bridge $cacheBridge */
+			$cacheBridge = $app->make(Bridge::class);
+
 			$configuration = Setup::createConfiguration(
 				$config->get('app.debug'),
-				storage_path('proxies')
+				storage_path('proxies'),
+				$cacheBridge
 			);
 
 			$driver = new ConfigurationDriver($config, $app);
@@ -48,9 +52,6 @@ class DoctrineServiceProvider extends ServiceProvider
 
 			if ($config->get('doctrine::cache.enabled'))
 			{
-				/** @type Bridge $cacheBridge */
-				$cacheBridge = $app->make(Bridge::class);
-
 				if ($config->get('doctrine::cache.hydration'))
 				{
 					$configuration->setHydrationCacheImpl($cacheBridge);
