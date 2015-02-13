@@ -7,7 +7,7 @@ use Doctrine\Common\Persistence\Mapping\ClassMetadata;
 use Doctrine\Common\Persistence\Mapping\MappingException;
 use Doctrine\Common\Persistence\Mapping\Driver\MappingDriver;
 
-class ConfigurationDriver implements MappingDriver
+class DecoupledMappingDriver implements MappingDriver
 {
 	/**
 	 * @type Repository
