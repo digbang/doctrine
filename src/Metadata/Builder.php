@@ -11,7 +11,7 @@ use Doctrine\ORM\Mapping\Builder\FieldBuilder;
  *
  * @package Digbang\Doctrine\Metadata
  *
- * @method $this getClassMetadata();
+ * @method $this getClassMetadata()
  * @method $this setMappedSuperClass()
  * @method $this setCustomRepositoryClass($repositoryClassName)
  * @method $this setReadOnly()
@@ -26,18 +26,6 @@ use Doctrine\ORM\Mapping\Builder\FieldBuilder;
  * @method $this setChangeTrackingPolicyDeferredExplicit()
  * @method $this setChangeTrackingPolicyNotify()
  * @method $this addLifecycleEvent($methodName, $event)
- * @method $this addField($name, $type, array $mapping = [])
- * @method $this createField($name, $type)
- * @method $this addManyToOne($name, $targetEntity, $inversedBy = null)
- * @method $this createManyToOne($name, $targetEntity)
- * @method $this createOneToOne($name, $targetEntity)
- * @method $this addInverseOneToOne($name, $targetEntity, $mappedBy)
- * @method $this addOwningOneToOne($name, $targetEntity, $inversedBy = null)
- * @method $this createManyToMany($name, $targetEntity)
- * @method $this addOwningManyToMany($name, $targetEntity, $inversedBy = null)
- * @method $this addInverseManyToMany($name, $targetEntity, $mappedBy)
- * @method $this createOneToMany($name, $targetEntity)
- * @method $this addOneToMany($name, $targetEntity, $mappedBy)
  */
 class Builder
 {
@@ -308,6 +296,65 @@ class Builder
         return $this->deletedAt();
     }
 
+    /**
+     * @param bool $nullable
+     * @param int  $algorithm one of PASSWORD_BCRYPT or PASSWORD_DEFAULT
+     *
+     * @return $this
+     */
+    public function password($nullable = true, $algorithm = PASSWORD_BCRYPT)
+    {
+        return $this->string('password', function(FieldBuilder $fieldBuilder) use ($nullable, $algorithm){
+            $fieldBuilder->nullable($nullable);
+            $fieldBuilder->length($algorithm == PASSWORD_BCRYPT ? 60 : 255);
+        });
+    }
+
+    /**
+     * @return $this
+     */
+    public function rememberToken()
+    {
+        return $this->string('rememberToken', function(FieldBuilder $fieldBuilder){
+            $fieldBuilder->columnName('remember_token');
+            $fieldBuilder->nullable();
+        });
+    }
+
+    /**
+     * Helper function to create a basic authenticated user mapping.
+     * Includes id, rememberToken, password, timestamps and softDeletes.
+     *
+     * To take full advantage of this, use the corresponding trait that matches
+     * your Identity selection:
+     * - <strong>IntIdentityTrait</strong> for "id" identity (auto-generated)
+     * - <strong>EmailIdentityTrait</strong> for "email" identity
+     * - <strong>UsernameIdentityTrait</strong> for "username" identity
+     *
+     * @param string $idField
+     * @param string $idType
+     *
+     * @return $this
+     */
+    public function auth($idField = 'id', $idType = Type::BIGINT)
+    {
+        $this->primary($idField, $idType);
+
+        if ($idField != 'email')
+        {
+            $this->string('email', function(FieldBuilder $fieldBuilder){
+                $fieldBuilder->unique();
+            });
+        }
+
+        $this->password();
+        $this->rememberToken();
+        $this->timestamps();
+        $this->softDeletes();
+
+        return $this;
+    }
+
 	/**
 	 * @param string        $type
 	 * @param string        $name
@@ -344,83 +391,106 @@ class Builder
 		return $this;
 	}
 
-	/**
-	 * Adds an embedded class to the entity.
-	 *
-	 * @param string $name
-	 * @param string $class
-	 * @param string|null $columnPrefix
-	 *
-	 * @return $this
-	 */
-	public function embedded($name, $class, $columnPrefix = null)
+    /**
+     * Sets single table inheritance on the entity.
+     *
+     * @param string $typeColumn
+     * @param int $inheritanceType One of the constants defined in the \Digbang\Doctrine\Metadata\Inheritance interface.
+     *
+     * @return $this
+     * @link http://doctrine-orm.readthedocs.org/en/latest/reference/inheritance-mapping.html
+     */
+	public function inheritance($typeColumn, $inheritanceType = Inheritance::SINGLE)
 	{
-		$classMetadata = $this->metadataBuilder->getClassMetadata();
+        switch ($inheritanceType)
+        {
+            case Inheritance::SINGLE:
+                $this->metadataBuilder->setSingleTableInheritance();
+                break;
+            case Inheritance::JOINED:
+                $this->metadataBuilder->setJoinedTableInheritance();
+                break;
+            case Inheritance::NONE:
+                $this->metadataBuilder->getClassMetadata()->setInheritanceType(Inheritance::NONE);
+                break;
+            default:
+                throw new \UnexpectedValueException(
+                    "Unexpected inheritance type: $inheritanceType. One of 'single' or 'joined' is required."
+                );
+        }
 
-		$classMetadata->mapEmbedded([
-			'fieldName'    => $name,
-			'class'        => $class,
-			'columnPrefix' => $columnPrefix
-		]);
+        $this->metadataBuilder->setDiscriminatorColumn($typeColumn);
 
 		return $this;
 	}
 
-	/**
-	 * Sets single table inheritance on the entity.
-	 *
-	 * @param string $typeColumn
-	 * @return $this
-	 *
-	 * @see http://doctrine-orm.readthedocs.org/en/latest/reference/inheritance-mapping.html#single-table-inheritance
-	 */
-	public function inheritance($typeColumn)
-	{
-		$this->metadataBuilder
-			->setSingleTableInheritance()
-			->setDiscriminatorColumn($typeColumn);
+    /**
+     * Adds an embedded class to the entity.
+     * Third parameter lets you add a prefix to customize how the embedded columns
+     * are built in this particular entity.
+     * Default is "no prefix" (false).
+     *
+     * <strong>WARNING:</strong> A <em>null</em> value will use the entity's name as prefix,
+     * as this is the default Doctrine behavior. Try not to use it, and put the literal string
+     * you intend to use instead.
+     *
+     * @param string           $class
+     * @param string           $name
+     * @param string|bool|null $columnPrefix
+     *
+     * @return $this
+     */
+    public function embedded($class, $name, $columnPrefix = false)
+    {
+        $classMetadata = $this->metadataBuilder->getClassMetadata();
 
-		return $this;
-	}
+        $classMetadata->mapEmbedded([
+            'fieldName'    => $name,
+            'class'        => $class,
+            'columnPrefix' => $columnPrefix
+        ]);
 
-	/**
+        return $this;
+    }
+
+    /**
 	 * Adds a manyToOne relation to the entity.
 	 *
 	 * A callback can be passed as a third parameter. If so, the callback will
 	 * receive an instance of Digbang\Doctrine\Metadata\Relations\BelongsTo
 	 * to manipulate the relation.
 	 *
-	 * @param string $entityName
-	 * @param string $relation
+	 * @param string        $entity
+	 * @param string        $field
 	 * @param callable|null $callback
 	 *
 	 * @return $this
 	 */
-	public function belongsTo($entityName, $relation, Closure $callback = null)
+	public function belongsTo($entity, $field, Closure $callback = null)
 	{
 		return $this->addRelation(
-			new Relations\BelongsTo($this->metadataBuilder, $entityName, $relation),
+			new Relations\BelongsTo($this->metadataBuilder, $entity, $field),
 			$callback
 		);
 	}
 
-	/**
+    /**
 	 * Adds a manyToMany relation to the entity.
 	 *
 	 * A callback can be passed as a third parameter. If so, the callback will
 	 * receive an instance of Digbang\Doctrine\Metadata\Relations\BelongsToMany
 	 * to manipulate the relation.
 	 *
-	 * @param string $entityName
-	 * @param string $relation
+	 * @param string $entity
+	 * @param string $field
 	 * @param callable|null $callback
 	 *
 	 * @return $this
 	 */
-	public function belongsToMany($entityName, $relation, Closure $callback = null)
+	public function belongsToMany($entity, $field, Closure $callback = null)
 	{
 		return $this->addRelation(
-			new Relations\BelongsToMany($this->metadataBuilder, $entityName, $relation),
+			new Relations\BelongsToMany($this->metadataBuilder, $entity, $field),
 			$callback
 		);
 	}
@@ -432,16 +502,16 @@ class Builder
 	 * receive an instance of Digbang\Doctrine\Metadata\Relations\HasMany
 	 * to manipulate the relation.
 	 *
-	 * @param string $entityName
-	 * @param string $relation
+	 * @param string $entity
+	 * @param string $field
 	 * @param callable|null $callback
 	 *
 	 * @return $this
 	 */
-	public function hasMany($entityName, $relation, Closure $callback = null)
+	public function hasMany($entity, $field, Closure $callback = null)
 	{
 		return $this->addRelation(
-			new Relations\HasMany($this->metadataBuilder, $entityName, $relation),
+			new Relations\HasMany($this->metadataBuilder, $entity, $field),
 			$callback
 		);
 	}
@@ -453,16 +523,16 @@ class Builder
 	 * receive an instance of Digbang\Doctrine\Metadata\Relations\BelongsToMany
 	 * to manipulate the relation.
 	 *
-	 * @param string $entityName
-	 * @param string $relation
+	 * @param string $entity
+	 * @param string $field
 	 * @param callable|null $callback
 	 *
 	 * @return $this
 	 */
-	public function hasOne($entityName, $relation, Closure $callback = null)
+	public function hasOne($entity, $field, Closure $callback = null)
 	{
 		return $this->addRelation(
-			new Relations\HasOne($this->metadataBuilder, $entityName, $relation),
+			new Relations\HasOne($this->metadataBuilder, $entity, $field),
 			$callback
 		);
 	}
