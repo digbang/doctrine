@@ -293,8 +293,20 @@ class Builder
 	 */
 	public function deletedAt()
 	{
-		return $this->datetime('deletedAt');
+		return $this->datetime('deletedAt', function(FieldBuilder $fieldBuilder){
+            $fieldBuilder->nullable();
+        });
 	}
+
+    /**
+     * Alias of deletedAt
+     *
+     * @return $this
+     */
+    public function softDeletes()
+    {
+        return $this->deletedAt();
+    }
 
 	/**
 	 * @param string        $type

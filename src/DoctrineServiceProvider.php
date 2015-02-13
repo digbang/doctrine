@@ -1,5 +1,7 @@
 <?php namespace Digbang\Doctrine;
 
+use Doctrine\Common\EventManager;
+use Doctrine\ORM\Events;
 use Doctrine\ORM\Tools\Setup;
 use Doctrine\ORM\EntityManager;
 use Digbang\Doctrine\Cache\Bridge;
@@ -10,6 +12,8 @@ use Doctrine\ORM\Mapping\ClassMetadataFactory;
 use Digbang\Doctrine\Metadata\ConfigurationDriver;
 use Digbang\Doctrine\Configuration\DatabaseConfigurationBridge;
 use Mitch\LaravelDoctrine\Console;
+use Mitch\LaravelDoctrine\EventListeners\SoftDeletableListener;
+use Mitch\LaravelDoctrine\Filters\TrashedFilter;
 
 class DoctrineServiceProvider extends ServiceProvider
 {
@@ -49,6 +53,7 @@ class DoctrineServiceProvider extends ServiceProvider
 			$configuration->setAutoGenerateProxyClasses(true);
 			$configuration->setRepositoryFactory($app->make(RepositoryFactory::class));
 			$configuration->setNamingStrategy($app->make(LaravelNamingStrategy::class));
+            $configuration->addFilter('trashed', TrashedFilter::class);
 
 			if ($config->get('doctrine::cache.enabled'))
 			{
@@ -85,7 +90,13 @@ class DoctrineServiceProvider extends ServiceProvider
 				$debugbar->addCollector(new \DebugBar\Bridge\DoctrineCollector($debugStack));
 			}
 
-			return EntityManager::create($conn, $configuration);
+            $eventManager = new EventManager;
+            $eventManager->addEventListener(Events::onFlush, new SoftDeletableListener);
+
+            $entityManager = EntityManager::create($conn, $configuration, $eventManager);
+            $entityManager->getFilters()->enable('trashed');
+
+            return $entityManager;
 		});
 	}
 

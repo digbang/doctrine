@@ -12,11 +12,16 @@
 	"require-dev": {
 		"phpunit/phpunit": "~4.0",
 		"maximebf/debugbar": "~1.10",
-		"illuminate/console": "~5.0@dev"
+		"illuminate/console": "~4.2"
 	},
 	"autoload": {
 		"psr-4": {
 			"Digbang\\Doctrine\\": "src/"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"Tests\\": "tests/"
 		}
 	},
 	"license": "proprietary",

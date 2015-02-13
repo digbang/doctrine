@@ -1,4 +1,11 @@
-<?php
+<?php namespace Tests\Cache;
+
+use Digbang\Doctrine\Cache\Bridge;
+use Illuminate\Cache\Repository;
+use Illuminate\Cache\StoreInterface;
+use PHPUnit_Framework_MockObject_MockObject;
+use PHPUnit_Framework_TestCase;
+
 class BridgeTest extends PHPUnit_Framework_TestCase
 {
 	const AN_EXISTING_KEY    = 'an_existing_key';
@@ -6,7 +13,7 @@ class BridgeTest extends PHPUnit_Framework_TestCase
 	const AN_EXISTING_VALUE  = 'An existing value';
 
 	/**
-	 * @type \Digbang\Doctrine\Cache\Bridge
+	 * @type Bridge
 	 */
 	private $cb;
 
@@ -23,16 +30,16 @@ class BridgeTest extends PHPUnit_Framework_TestCase
 	protected function setUp()
 	{
 		$this->laravelCache = $this
-			->getMockBuilder(\Illuminate\Cache\Repository::class)
+			->getMockBuilder(Repository::class)
 			->disableOriginalConstructor()
 			->getMock();
 
 		$this->store = $this
-			->getMockBuilder(\Illuminate\Cache\StoreInterface::class)
+			->getMockBuilder(StoreInterface::class)
 			->disableOriginalConstructor()
 			->getMock();
 
-		$this->cb = new \Digbang\Doctrine\Cache\Bridge($this->laravelCache);
+		$this->cb = new Bridge($this->laravelCache);
 
 		$version = rand(0, 10);
 
