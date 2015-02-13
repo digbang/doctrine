@@ -5,6 +5,7 @@ use Doctrine\ORM\Events;
 use Doctrine\ORM\Tools\Setup;
 use Doctrine\ORM\EntityManager;
 use Digbang\Doctrine\Cache\Bridge;
+use Illuminate\Auth\AuthManager;
 use Illuminate\Container\Container;
 use Illuminate\Support\ServiceProvider;
 use Doctrine\ORM\EntityManagerInterface;
@@ -12,6 +13,7 @@ use Doctrine\ORM\Mapping\ClassMetadataFactory;
 use Digbang\Doctrine\Metadata\DecoupledMappingDriver;
 use Digbang\Doctrine\Configuration\DatabaseConfigurationBridge;
 use Mitch\LaravelDoctrine\Console;
+use Mitch\LaravelDoctrine\DoctrineUserProvider;
 use Mitch\LaravelDoctrine\EventListeners\SoftDeletableListener;
 use Mitch\LaravelDoctrine\Filters\TrashedFilter;
 
@@ -50,6 +52,8 @@ class DoctrineServiceProvider extends ServiceProvider
 	{
 		$this->package('digbang/doctrine', null, realpath(__DIR__));
 
+        $this->registerAuthDriver();
+
 		$this->commands([
 			Console\GenerateProxiesCommand::class,
 			Console\SchemaCreateCommand::class,
@@ -57,5 +61,19 @@ class DoctrineServiceProvider extends ServiceProvider
 			Console\SchemaDropCommand::class
 		]);
 	}
+
+    private function registerAuthDriver()
+    {
+        if (isset($this->app[AuthManager::class]))
+        {
+            $this->app[AuthManager::class]->extend('doctrine', function ($app) {
+                return new DoctrineUserProvider(
+                    $app['Illuminate\Hashing\HasherInterface'],
+                    $app[EntityManager::class],
+                    $app['config']['auth.model']
+                );
+            });
+        }
+    }
 }
  
