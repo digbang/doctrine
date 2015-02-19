@@ -12,7 +12,7 @@ use Doctrine\ORM\Events;
 use Doctrine\ORM\Tools\Setup;
 use Illuminate\Config\Repository;
 use Illuminate\Container\Container;
-use Mitch\LaravelDoctrine\Filters\TrashedFilter;
+use Digbang\Doctrine\Filters\TrashedFilter;
 use ProxyManager\Factory\LazyLoadingValueHolderFactory;
 
 class EntityManagerFactory
