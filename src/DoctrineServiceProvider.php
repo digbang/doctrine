@@ -64,9 +64,9 @@ class DoctrineServiceProvider extends ServiceProvider
 
     private function registerAuthDriver()
     {
-        if (isset($this->app[AuthManager::class]))
+        if (isset($this->app['auth']))
         {
-            $this->app[AuthManager::class]->extend('doctrine', function ($app) {
+            $this->app['auth']->extend('doctrine', function ($app) {
                 return new DoctrineUserProvider(
                     $app['Illuminate\Hashing\HasherInterface'],
                     $app[EntityManager::class],
