@@ -1,24 +1,22 @@
 <?php namespace Digbang\Doctrine;
 
-use Doctrine\Common\EventManager;
-use Doctrine\ORM\Events;
-use Doctrine\ORM\Tools\Setup;
 use Doctrine\ORM\EntityManager;
-use Digbang\Doctrine\Cache\Bridge;
-use Illuminate\Auth\AuthManager;
 use Illuminate\Container\Container;
 use Illuminate\Support\ServiceProvider;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadataFactory;
-use Digbang\Doctrine\Metadata\DecoupledMappingDriver;
-use Digbang\Doctrine\Configuration\DatabaseConfigurationBridge;
 use Mitch\LaravelDoctrine\Console;
 use Mitch\LaravelDoctrine\DoctrineUserProvider;
-use Mitch\LaravelDoctrine\EventListeners\SoftDeletableListener;
-use Mitch\LaravelDoctrine\Filters\TrashedFilter;
 
 class DoctrineServiceProvider extends ServiceProvider
 {
+    /**
+     * The application instance.
+     *
+     * @type \Illuminate\Container\Container
+     */
+    protected $app;
+
 	/**
 	 * Register the service provider.
 	 *
@@ -55,10 +53,42 @@ class DoctrineServiceProvider extends ServiceProvider
         $this->registerAuthDriver();
 
 		$this->commands([
-			Console\GenerateProxiesCommand::class,
-			Console\SchemaCreateCommand::class,
-			Console\SchemaUpdateCommand::class,
-			Console\SchemaDropCommand::class
+            // doctrine:exec
+            Commands\Exec\RunSqlCommand::class,
+            Commands\Exec\RunDqlCommand::class,
+            Commands\Exec\ImportCommand::class,
+
+            // doctrine:clear-cache
+            Commands\ClearCache\MetadataCommand::class,
+            Commands\ClearCache\QueryCommand::class,
+            Commands\ClearCache\ResultCommand::class,
+
+            // doctrine:schema
+            Commands\Schema\CreateCommand::class,
+            Commands\Schema\UpdateCommand::class,
+            Commands\Schema\DropCommand::class,
+
+            // doctrine:validate
+            Commands\Validate\ProductionCommand::class,
+            Commands\Validate\SchemaCommand::class,
+
+            // doctrine:generate
+            Commands\Generate\RepositoriesCommand::class,
+            Commands\Generate\EntitiesCommand::class,
+            Commands\Generate\ProxiesCommand::class,
+
+            // doctrine:mappings
+            Commands\Mappings\InfoCommand::class,
+            Commands\Mappings\DescribeCommand::class,
+            Commands\Mappings\ConvertCommand::class,
+
+            // doctrine:migrations
+            Commands\Migrations\DiffCommand::class,
+            Commands\Migrations\ExecuteCommand::class,
+            Commands\Migrations\GenerateCommand::class,
+            Commands\Migrations\MigrateCommand::class,
+            Commands\Migrations\StatusCommand::class,
+            Commands\Migrations\VersionCommand::class
 		]);
 	}
 
