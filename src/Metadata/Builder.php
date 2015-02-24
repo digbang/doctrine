@@ -1,6 +1,7 @@
 <?php namespace Digbang\Doctrine\Metadata;
 
 use Closure;
+use Digbang\Doctrine\Types\CarbonType;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\Events;
 use Doctrine\ORM\Mapping\Builder\ClassMetadataBuilder;
@@ -15,12 +16,9 @@ use Doctrine\ORM\Mapping\Builder\FieldBuilder;
  * @method $this setMappedSuperClass()
  * @method $this setCustomRepositoryClass($repositoryClassName)
  * @method $this setReadOnly()
- * @method $this setTable($name)
  * @method $this addIndex(array $columns, $name)
  * @method $this addUniqueConstraint(array $columns, $name)
  * @method $this addNamedQuery($name, $dqlQuery)
- * @method $this setJoinedTableInheritance()
- * @method $this setSingleTableInheritance()
  * @method $this setDiscriminatorColumn($name, $type = 'string', $length = 255)
  * @method $this addDiscriminatorMapClass($name, $class)
  * @method $this setChangeTrackingPolicyDeferredExplicit()
@@ -99,7 +97,7 @@ class Builder
 	 */
 	public function datetime($name, Closure $callback = null)
 	{
-		return $this->field(Type::DATETIME, $name, $callback);
+		return $this->field(CarbonType::DATETIME, $name, $callback);
 	}
 
 	/**
@@ -110,7 +108,7 @@ class Builder
 	 */
 	public function datetimetz($name, Closure $callback = null)
 	{
-		return $this->field(Type::DATETIMETZ, $name, $callback);
+		return $this->field(CarbonType::DATETIMETZ, $name, $callback);
 	}
 
 	/**
@@ -121,7 +119,7 @@ class Builder
 	 */
 	public function date($name, Closure $callback = null)
 	{
-		return $this->field(Type::DATE, $name, $callback);
+		return $this->field(CarbonType::DATE, $name, $callback);
 	}
 
 	/**
@@ -132,7 +130,7 @@ class Builder
 	 */
 	public function time($name, Closure $callback = null)
 	{
-		return $this->field(Type::TIME, $name, $callback);
+		return $this->field(CarbonType::TIME, $name, $callback);
 	}
 
 	/**
