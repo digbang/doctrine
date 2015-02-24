@@ -1,5 +1,7 @@
 <?php namespace Digbang\Doctrine;
 
+use Digbang\Doctrine\Types;
+use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\EntityManager;
 use Illuminate\Container\Container;
 use Illuminate\Support\ServiceProvider;
@@ -26,6 +28,7 @@ class DoctrineServiceProvider extends ServiceProvider
 	{
 		$this->registerEntityManager();
 		$this->registerClassMetadataFactory();
+        $this->registerTypes();
 	}
 
 	private function registerEntityManager()
@@ -101,6 +104,14 @@ class DoctrineServiceProvider extends ServiceProvider
                 $app['config']['auth.model']
             );
         });
+    }
+
+    private function registerTypes()
+    {
+        Type::addType(Types\CarbonType::DATETIMETZ, Types\CarbonDateTimeTzType::class);
+        Type::addType(Types\CarbonType::DATETIME, Types\CarbonDateTimeType::class);
+        Type::addType(Types\CarbonType::DATE, Types\CarbonDateType::class);
+        Type::addType(Types\CarbonType::TIME, Types\CarbonTimeType::class);
     }
 }
  

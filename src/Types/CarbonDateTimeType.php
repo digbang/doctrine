@@ -3,7 +3,7 @@
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\DateTimeType;
 
-class CarbonDateTimeType extends DateTimeType implements CarbonType
+class CarbonDateTimeType extends DateTimeType
 {
     use CarbonTypeTrait;
 
