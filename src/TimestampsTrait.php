@@ -3,18 +3,18 @@
 trait TimestampsTrait
 {
 	/**
-	 * @type \DateTime
+	 * @type \Carbon\Carbon
 	 */
 	private $createdAt;
 
 	/**
-	 * @type \DateTime
+	 * @type \Carbon\Carbon
 	 */
 	private $updatedAt;
 
 	public function onPrePersist()
 	{
-		$now = new \DateTime();
+		$now = new \Carbon\Carbon();
 
 		$this->createdAt = $now;
 		$this->updatedAt = $now;
@@ -22,7 +22,7 @@ trait TimestampsTrait
 
 	public function onPreUpdate()
 	{
-		$now = new \DateTime();
+		$now = new \Carbon\Carbon();
 
 		$this->updatedAt = $now;
 	}

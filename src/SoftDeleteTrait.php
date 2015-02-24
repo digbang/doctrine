@@ -3,7 +3,7 @@
 trait SoftDeleteTrait
 {
     /**
-     * @type \DateTime
+     * @type \Carbon\Carbon
      */
 	private $deletedAt;
 }
