@@ -38,7 +38,13 @@ class DoctrineServiceProvider extends ServiceProvider
 
 		// bind the EM concrete
 		$this->app->singleton(EntityManager::class, function(Container $app) {
-            return $app->make(EntityManagerFactory::class)->create($app);
+			$debugbar = null;
+			if (isset($app['debugbar']))
+			{
+				$debugbar = $app['debugbar'];
+			}
+
+            return $app->make(EntityManagerFactory::class)->create($debugbar);
 		});
 	}
 

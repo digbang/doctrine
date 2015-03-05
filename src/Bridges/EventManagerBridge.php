@@ -3,11 +3,28 @@
 use Doctrine\Common\EventArgs;
 use Doctrine\Common\EventManager;
 use Doctrine\Common\EventSubscriber;
+use Doctrine\ORM\Events;
 use Illuminate\Events\Dispatcher;
 
 class EventManagerBridge extends EventManager
 {
 	private $dispatcher;
+
+	private $doctrineEvents = [
+		Events::preRemove,
+		Events::postRemove,
+		Events::prePersist,
+		Events::postPersist,
+		Events::preUpdate,
+		Events::postUpdate,
+		Events::postLoad,
+		Events::loadClassMetadata,
+		Events::onClassMetadataNotFound,
+		Events::preFlush,
+		Events::onFlush,
+		Events::postFlush,
+		Events::onClear,
+	];
 
 	public function __construct(Dispatcher $dispatcher)
 	{
@@ -36,7 +53,12 @@ class EventManagerBridge extends EventManager
 
 	public function addEventListener($events, $listener)
 	{
-		$this->dispatcher->listen($events, $listener);
+		foreach ((array) $events as $event)
+		{
+			$boundListener = $this->getDoctrineListener($listener, $event);
+
+			$this->dispatcher->listen($event, $boundListener);
+		}
 	}
 
 	public function removeEventListener($events, $listener)
@@ -45,7 +67,9 @@ class EventManagerBridge extends EventManager
 		{
 			$listeners = $this->dispatcher->getListeners($event);
 
-			if (($key = array_search($listener, $listeners)) !== false)
+			$boundListener = $this->getDoctrineListener($listener, $event);
+
+			if (($key = array_search($boundListener, $listeners)) !== false)
 			{
 				unset($listeners[$key]);
 
@@ -60,11 +84,32 @@ class EventManagerBridge extends EventManager
 
 	public function addEventSubscriber(EventSubscriber $subscriber)
 	{
-		$this->dispatcher->listen($subscriber->getSubscribedEvents(), $subscriber);
+		$this->addEventListener($subscriber->getSubscribedEvents(), $subscriber);
 	}
 
 	public function removeEventSubscriber(EventSubscriber $subscriber)
 	{
 		$this->removeEventListener($subscriber->getSubscribedEvents(), $subscriber);
+	}
+
+	private function isDoctrineEvent($eventName)
+	{
+		return in_array($eventName, $this->doctrineEvents);
+	}
+
+	/**
+	 * @param mixed $listener
+	 * @param string $eventName
+	 *
+	 * @return callable|string
+	 */
+	private function getDoctrineListener($listener, $eventName)
+	{
+		if ($this->isDoctrineEvent($eventName))
+		{
+			return [$listener, $eventName];
+		}
+
+		return $listener;
 	}
 }
