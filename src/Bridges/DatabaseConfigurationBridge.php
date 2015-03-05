@@ -1,4 +1,4 @@
-<?php namespace Digbang\Doctrine\Configuration;
+<?php namespace Digbang\Doctrine\Bridges;
 
 use Doctrine\DBAL\Connection;
 use Illuminate\Config\Repository;

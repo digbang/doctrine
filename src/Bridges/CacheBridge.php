@@ -1,9 +1,9 @@
-<?php namespace Digbang\Doctrine\Cache;
+<?php namespace Digbang\Doctrine\Bridges;
 
 use Illuminate\Cache\Repository;
 use Doctrine\Common\Cache\CacheProvider;
 
-class Bridge extends CacheProvider
+class CacheBridge extends CacheProvider
 {
 	/**
 	 * @type Repository

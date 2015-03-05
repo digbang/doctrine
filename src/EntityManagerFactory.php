@@ -1,17 +1,16 @@
 <?php namespace Digbang\Doctrine;
 
-use Digbang\Doctrine\Cache\Bridge;
-use Digbang\Doctrine\Configuration\DatabaseConfigurationBridge;
+use Digbang\Doctrine\Bridges\CacheBridge;
+use Digbang\Doctrine\Bridges\DatabaseConfigurationBridge;
+use Digbang\Doctrine\Bridges\EventManagerBridge;
 use Digbang\Doctrine\Listeners\SoftDeletableListener;
 use Digbang\Doctrine\Metadata\DecoupledMappingDriver;
 use Doctrine\Common\EventManager;
-use Doctrine\Common\Persistence\Mapping\Driver\MappingDriver;
 use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Events;
 use Doctrine\ORM\Tools\Setup;
 use Illuminate\Config\Repository;
-use Illuminate\Container\Container;
 use Digbang\Doctrine\Filters\TrashedFilter;
 use ProxyManager\Factory\LazyLoadingValueHolderFactory;
 
@@ -28,55 +27,97 @@ class EntityManagerFactory
     private $config;
 
     /**
-     * @type Bridge
+     * @type CacheBridge
      */
     private $cacheBridge;
 
-    /**
-     * @param LazyLoadingValueHolderFactory $lazyLoadingValueHolderFactory
-     */
-    public function __construct(LazyLoadingValueHolderFactory $lazyLoadingValueHolderFactory, Repository $config, Bridge $cacheBridge)
+	/**
+	 * @type DatabaseConfigurationBridge
+	 */
+	private $databaseConfigurationBridge;
+
+	/**
+	 * @type \Digbang\Doctrine\RepositoryFactory
+	 */
+	private $repositoryFactory;
+
+	/**
+	 * @type \Digbang\Doctrine\LaravelNamingStrategy
+	 */
+	private $laravelNamingStrategy;
+
+	/**
+	 * @type \Digbang\Doctrine\Metadata\DecoupledMappingDriver
+	 */
+	private $decoupledMappingDriver;
+
+	/**
+	 * @type \Digbang\Doctrine\Bridges\EventManagerBridge
+	 */
+	private $eventManagerBridge;
+
+	/**
+	 * @param LazyLoadingValueHolderFactory $lazyLoadingValueHolderFactory
+	 * @param Repository                    $config
+	 * @param CacheBridge                   $cacheBridge
+	 * @param DatabaseConfigurationBridge   $databaseConfigurationBridge
+	 * @param RepositoryFactory             $repositoryFactory
+	 * @param LaravelNamingStrategy         $laravelNamingStrategy
+	 * @param DecoupledMappingDriver        $decoupledMappingDriver
+	 * @param EventManagerBridge            $eventManagerBridge
+	 */
+    public function __construct(
+	    LazyLoadingValueHolderFactory $lazyLoadingValueHolderFactory,
+	    Repository                    $config,
+	    CacheBridge                   $cacheBridge,
+		DatabaseConfigurationBridge   $databaseConfigurationBridge,
+		RepositoryFactory             $repositoryFactory,
+		LaravelNamingStrategy         $laravelNamingStrategy,
+		DecoupledMappingDriver        $decoupledMappingDriver,
+		EventManagerBridge            $eventManagerBridge
+    )
     {
         $this->lazyLoadingValueHolderFactory = $lazyLoadingValueHolderFactory;
-        $this->config = $config;
-        $this->cacheBridge = $cacheBridge;
+        $this->config                        = $config;
+        $this->cacheBridge                   = $cacheBridge;
+	    $this->databaseConfigurationBridge   = $databaseConfigurationBridge;
+	    $this->repositoryFactory             = $repositoryFactory;
+	    $this->laravelNamingStrategy         = $laravelNamingStrategy;
+	    $this->decoupledMappingDriver        = $decoupledMappingDriver;
+	    $this->eventManagerBridge            = $eventManagerBridge;
     }
 
     /**
-     * @param Container $app
-     *
      * @return \Doctrine\ORM\EntityManager
      */
-    public function create(Container $app)
+    public function create(\DebugBar\DebugBar $debugBar = null)
     {
         return $this->lazyLoadingValueHolderFactory->createProxy(
             EntityManager::class,
-            function (& $wrappedObject, $proxy, $method, $parameters, & $initializer) use ($app) {
-                /** @type \Doctrine\ORM\Configuration $configuration */
-                $driver = new DecoupledMappingDriver($this->config, $app);
-
-                $configuration = $this->createConfiguration($driver, $app);
+            function (& $wrappedObject, $proxy, $method, $parameters, & $initializer) use ($debugBar){
+                $configuration = $this->createConfiguration();
 
                 if ($this->config->get('doctrine::cache.enabled'))
                 {
                     $this->addCacheImplementation($configuration);
                 }
 
-                $conn = $app->make(DatabaseConfigurationBridge::class)->getConnection();
+                $conn = $this->databaseConfigurationBridge->getConnection();
 
-                if (isset($app['debugbar']))
+                if ($debugBar !== null)
                 {
-                    $this->addLogger($app['debugbar'], $configuration);
+                    $this->addLogger($debugBar, $configuration);
                 }
 
-                $eventManager = new EventManager();
-                $eventManager->addEventListener(Events::onFlush, new SoftDeletableListener());
+                $this->eventManagerBridge->addEventListener(Events::onFlush, new SoftDeletableListener());
 
-                $entityManager = EntityManager::create($conn, $configuration, $eventManager);
+                $entityManager = EntityManager::create($conn, $configuration, $this->eventManagerBridge);
                 $entityManager->getFilters()->enable('trashed');
 
                 $wrappedObject = $entityManager;
                 $initializer = null;
+
+	            return true;
             }
         );
     }
@@ -121,17 +162,17 @@ class EntityManagerFactory
         }
     }
 
-    protected function createConfiguration(MappingDriver $driver, Container $app)
+    protected function createConfiguration()
     {
         $configuration = Setup::createConfiguration(
             $this->config->get('app.debug'),
             storage_path('proxies'),
             $this->cacheBridge
         );
-        $configuration->setMetadataDriverImpl($driver);
+        $configuration->setMetadataDriverImpl($this->decoupledMappingDriver);
         $configuration->setAutoGenerateProxyClasses(true);
-        $configuration->setRepositoryFactory($app->make(RepositoryFactory::class));
-        $configuration->setNamingStrategy($app->make(LaravelNamingStrategy::class));
+        $configuration->setRepositoryFactory($this->repositoryFactory);
+        $configuration->setNamingStrategy($this->laravelNamingStrategy);
         $configuration->addFilter('trashed', TrashedFilter::class);
 
         return $configuration;
