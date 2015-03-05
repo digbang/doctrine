@@ -5,7 +5,6 @@ use Digbang\Doctrine\Bridges\DatabaseConfigurationBridge;
 use Digbang\Doctrine\Bridges\EventManagerBridge;
 use Digbang\Doctrine\Listeners\SoftDeletableListener;
 use Digbang\Doctrine\Metadata\DecoupledMappingDriver;
-use Doctrine\Common\EventManager;
 use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Events;
