@@ -11,15 +11,9 @@ use Doctrine\ORM\Events;
 use Doctrine\ORM\Tools\Setup;
 use Illuminate\Config\Repository;
 use Digbang\Doctrine\Filters\TrashedFilter;
-use ProxyManager\Factory\LazyLoadingValueHolderFactory;
 
 class EntityManagerFactory
 {
-    /**
-     * @type LazyLoadingValueHolderFactory
-     */
-    private $lazyLoadingValueHolderFactory;
-
     /**
      * @type Repository
      */
@@ -56,7 +50,6 @@ class EntityManagerFactory
 	private $eventManagerBridge;
 
 	/**
-	 * @param LazyLoadingValueHolderFactory $lazyLoadingValueHolderFactory
 	 * @param Repository                    $config
 	 * @param CacheBridge                   $cacheBridge
 	 * @param DatabaseConfigurationBridge   $databaseConfigurationBridge
@@ -66,24 +59,22 @@ class EntityManagerFactory
 	 * @param EventManagerBridge            $eventManagerBridge
 	 */
     public function __construct(
-	    LazyLoadingValueHolderFactory $lazyLoadingValueHolderFactory,
-	    Repository                    $config,
-	    CacheBridge                   $cacheBridge,
-		DatabaseConfigurationBridge   $databaseConfigurationBridge,
-		RepositoryFactory             $repositoryFactory,
-		LaravelNamingStrategy         $laravelNamingStrategy,
-		DecoupledMappingDriver        $decoupledMappingDriver,
-		EventManagerBridge            $eventManagerBridge
+	    Repository                  $config,
+	    CacheBridge                 $cacheBridge,
+		DatabaseConfigurationBridge $databaseConfigurationBridge,
+		RepositoryFactory           $repositoryFactory,
+		LaravelNamingStrategy       $laravelNamingStrategy,
+		DecoupledMappingDriver      $decoupledMappingDriver,
+		EventManagerBridge          $eventManagerBridge
     )
     {
-        $this->lazyLoadingValueHolderFactory = $lazyLoadingValueHolderFactory;
-        $this->config                        = $config;
-        $this->cacheBridge                   = $cacheBridge;
-	    $this->databaseConfigurationBridge   = $databaseConfigurationBridge;
-	    $this->repositoryFactory             = $repositoryFactory;
-	    $this->laravelNamingStrategy         = $laravelNamingStrategy;
-	    $this->decoupledMappingDriver        = $decoupledMappingDriver;
-	    $this->eventManagerBridge            = $eventManagerBridge;
+        $this->config                      = $config;
+        $this->cacheBridge                 = $cacheBridge;
+	    $this->databaseConfigurationBridge = $databaseConfigurationBridge;
+	    $this->repositoryFactory           = $repositoryFactory;
+	    $this->laravelNamingStrategy       = $laravelNamingStrategy;
+	    $this->decoupledMappingDriver      = $decoupledMappingDriver;
+	    $this->eventManagerBridge          = $eventManagerBridge;
     }
 
     /**
@@ -91,34 +82,26 @@ class EntityManagerFactory
      */
     public function create(\DebugBar\DebugBar $debugBar = null)
     {
-        return $this->lazyLoadingValueHolderFactory->createProxy(
-            EntityManager::class,
-            function (& $wrappedObject, $proxy, $method, $parameters, & $initializer) use ($debugBar){
-                $configuration = $this->createConfiguration();
+        $configuration = $this->createConfiguration();
 
-                if ($this->config->get('doctrine::cache.enabled'))
-                {
-                    $this->addCacheImplementation($configuration);
-                }
+        if ($this->config->get('doctrine::cache.enabled'))
+        {
+            $this->addCacheImplementation($configuration);
+        }
 
-                $conn = $this->databaseConfigurationBridge->getConnection();
+        $conn = $this->databaseConfigurationBridge->getConnection();
 
-                if ($debugBar !== null)
-                {
-                    $this->addLogger($debugBar, $configuration);
-                }
+        if ($debugBar !== null)
+        {
+            $this->addLogger($debugBar, $configuration);
+        }
 
-                $this->eventManagerBridge->addEventListener(Events::onFlush, new SoftDeletableListener());
+        $this->eventManagerBridge->addEventListener(Events::onFlush, new SoftDeletableListener());
 
-                $entityManager = EntityManager::create($conn, $configuration, $this->eventManagerBridge);
-                $entityManager->getFilters()->enable('trashed');
+        $entityManager = EntityManager::create($conn, $configuration, $this->eventManagerBridge);
+        $entityManager->getFilters()->enable('trashed');
 
-                $wrappedObject = $entityManager;
-                $initializer = null;
-
-	            return true;
-            }
-        );
+        return $entityManager;
     }
 
     /**
