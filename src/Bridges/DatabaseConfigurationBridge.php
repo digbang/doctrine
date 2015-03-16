@@ -54,19 +54,19 @@ class DatabaseConfigurationBridge
 
 		$config = [
 			'driver'   => $this->doctrineDrivers[$driver],
-			'host'     => $configuration['host'],
-			'user'     => $configuration['username'],
-			'password' => $configuration['password'],
-			'charset'  => $configuration['charset']
+			'host'     => array_get($configuration, 'host'),
+			'user'     => array_get($configuration, 'username'),
+			'password' => array_get($configuration, 'password'),
+			'charset'  => array_get($configuration, 'charset')
 		];
 
 		if ($driver == 'sqlite')
 		{
-			$config['path'] = $configuration['database'];
+			$config['path'] = array_get($configuration, 'database');
 		}
 		else
 		{
-			$config['dbname'] = $configuration['database'];
+			$config['dbname'] = array_get($configuration, 'database');
 		}
 
 		return $config;
