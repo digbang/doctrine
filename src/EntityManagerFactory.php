@@ -148,11 +148,11 @@ class EntityManagerFactory
     {
         $configuration = Setup::createConfiguration(
             $this->config->get('app.debug'),
-            storage_path('proxies'),
+            $this->config->get('doctrine::doctrine.proxies.directory'),
             $this->cacheBridge
         );
         $configuration->setMetadataDriverImpl($this->decoupledMappingDriver);
-        $configuration->setAutoGenerateProxyClasses(true);
+        $configuration->setAutoGenerateProxyClasses($this->config->get('doctrine::doctrine.proxies.autogenerate', true));
         $configuration->setRepositoryFactory($this->repositoryFactory);
         $configuration->setNamingStrategy($this->laravelNamingStrategy);
         $configuration->addFilter('trashed', TrashedFilter::class);
