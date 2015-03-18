@@ -103,6 +103,8 @@ class EntityManagerFactory
         $entityManager = EntityManager::create($conn, $configuration, $this->eventManagerBridge);
         $entityManager->getFilters()->enable('trashed');
 
+	    $conn->getDatabasePlatform()->registerDoctrineTypeMapping('TSVECTOR', Types\TsvectorType::TSVECTOR);
+
         return $entityManager;
     }
 
