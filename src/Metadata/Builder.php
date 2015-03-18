@@ -2,6 +2,7 @@
 
 use Closure;
 use Digbang\Doctrine\Types\CarbonType;
+use Digbang\Doctrine\Types\TsvectorType;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\Events;
 use Doctrine\ORM\Mapping\Builder\ClassMetadataBuilder;
@@ -241,6 +242,17 @@ class Builder
 	public function guid($name, Closure $callback = null)
 	{
 		return $this->field(Type::GUID, $name, $callback);
+	}
+
+	/**
+	 * @param string   $name
+	 * @param callable $callback
+	 *
+	 * @return $this
+	 */
+	public function tsvector($name, Closure $callback = null)
+	{
+		return $this->field(TsvectorType::TSVECTOR, $name, $callback);
 	}
 
 	/**
