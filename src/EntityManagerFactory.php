@@ -5,6 +5,8 @@ use Digbang\Doctrine\Bridges\DatabaseConfigurationBridge;
 use Digbang\Doctrine\Bridges\EventManagerBridge;
 use Digbang\Doctrine\Listeners\SoftDeletableListener;
 use Digbang\Doctrine\Metadata\DecoupledMappingDriver;
+use Digbang\Doctrine\Query\AST\Functions\TsqueryFunction;
+use Digbang\Doctrine\Query\AST\Functions\TsrankFunction;
 use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Events;
@@ -156,6 +158,8 @@ class EntityManagerFactory
         $configuration->setRepositoryFactory($this->repositoryFactory);
         $configuration->setNamingStrategy($this->laravelNamingStrategy);
         $configuration->addFilter('trashed', TrashedFilter::class);
+	    $configuration->addCustomStringFunction(TsqueryFunction::TSQUERY, TsqueryFunction::class);
+	    $configuration->addCustomStringFunction(TsrankFunction::TSRANK, TsrankFunction::class);
 
         return $configuration;
     }
