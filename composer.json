@@ -1,31 +1,31 @@
 {
 	"name": "digbang/doctrine",
 	"description": "Tools and configurations to use Doctrine ORM inside Laravel in Digbang.",
-	"require": {
-		"doctrine/orm": "2.5.*@dev",
-		"illuminate/cache": "~4.2",
-		"illuminate/config": "~4.2",
-		"illuminate/support": "~4.2",
-		"illuminate/container": "~4.2",
-		"mitchellvanw/laravel-doctrine": "~0.5",
-		"illuminate/auth": "~4.2"
-	},
-	"require-dev": {
-		"phpunit/phpunit": "~4.0",
-		"maximebf/debugbar": "~1.10",
-		"illuminate/console": "~4.2"
-	},
-	"autoload": {
-		"psr-4": {
-			"Digbang\\Doctrine\\": "src/"
-		}
-	},
-	"autoload-dev": {
-		"psr-4": {
-			"Tests\\": "tests/"
-		}
-	},
-	"license": "proprietary",
-	"minimum-stability": "dev",
+    "license": "proprietary",
+    "require": {
+        "doctrine/orm":                  "~2.5",
+        "illuminate/cache":              "~4.2",
+        "illuminate/config":             "~4.2",
+        "illuminate/support":            "~4.2",
+        "illuminate/container":          "~4.2",
+        "mitchellvanw/laravel-doctrine": "~0.5",
+        "illuminate/auth":               "~4.2"
+    },
+    "require-dev": {
+        "phpunit/phpunit":    "~4.0",
+        "maximebf/debugbar":  "~1.10",
+        "illuminate/console": "~4.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "Digbang\\Doctrine\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "minimum-stability": "dev",
 	"prefer-stable": true
 }
