@@ -33,8 +33,8 @@ class RepositoryFactory implements RepositoryFactoryInterface
 	 */
 	public function getRepository(EntityManagerInterface $entityManager, $entityName)
 	{
-		$namespace = $this->config->get('doctrine::repository_namespace');
-		$suffix = $this->config->get('doctrine::repository_suffix', '');
+		$namespace = $this->config->get('doctrine::repositories.namespace');
+		$suffix = $this->config->get('doctrine::repositories.suffix', '');
 		$basename = class_basename($entityName);
 
 		return $this->container->make("$namespace\\{$basename}Repository{$suffix}");
