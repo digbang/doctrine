@@ -1,6 +1,6 @@
 <?php
 return [
-    'proxy' => [
+    'proxies' => [
 	    'autogenerate' => true,
         'directory' => storage_path('proxies')
     ],
