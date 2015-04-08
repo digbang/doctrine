@@ -28,6 +28,6 @@ trait RememberTokenTrait
      */
     public function getRememberTokenName()
     {
-        return 'remember_token';
+        return 'rememberToken';
     }
 }

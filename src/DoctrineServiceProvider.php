@@ -4,11 +4,11 @@ use Digbang\Doctrine\Types;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\EntityManager;
 use Illuminate\Container\Container;
+use Illuminate\Hashing\HasherInterface;
 use Illuminate\Support\ServiceProvider;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadataFactory;
 use Mitch\LaravelDoctrine\Console;
-use Mitch\LaravelDoctrine\DoctrineUserProvider;
 
 class DoctrineServiceProvider extends ServiceProvider
 {
@@ -105,7 +105,7 @@ class DoctrineServiceProvider extends ServiceProvider
     {
         $this->app['auth']->extend('doctrine', function ($app) {
             return new DoctrineUserProvider(
-                $app['Illuminate\Hashing\HasherInterface'],
+                $app[HasherInterface::class],
                 $app[EntityManager::class],
                 $app['config']['auth.model']
             );
@@ -121,4 +121,3 @@ class DoctrineServiceProvider extends ServiceProvider
         Type::addType(Types\TsvectorType::TSVECTOR, Types\TsvectorType::class);
     }
 }
- 
