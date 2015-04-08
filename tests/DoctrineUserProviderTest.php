@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping\ClassMetadata;
 use Illuminate\Hashing\HasherInterface;
 use PHPUnit_Framework_MockObject_MockObject as Mock;
 
-class DoctrineUserProviderTest extends \PHPUnit_Framework_TestCase
+class DoctrineUserProviderTest extends TestCase
 {
 	/**
 	 * @type Mock
@@ -115,18 +115,5 @@ class DoctrineUserProviderTest extends \PHPUnit_Framework_TestCase
 			$this->entityManagerMock,
 			$entityName
 		);
-	}
-
-	/**
-	 * @param $className
-	 *
-	 * @return object|\PHPUnit_Framework_MockObject_MockObject
-	 */
-	private function getEmptyMock($className)
-	{
-		return $this
-			->getMockBuilder($className)
-			->disableOriginalConstructor()
-			->getMock();
 	}
 }
