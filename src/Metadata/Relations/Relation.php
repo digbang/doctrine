@@ -14,6 +14,7 @@
  * @method $this fetchLazy()
  * @method $this addJoinColumn($columnName, $referencedColumnName, $nullable = true, $unique = false, $onDelete = null, $columnDef = null)
  * @method $this build()
+ * @method $this orphanRemoval()
  */
 abstract class Relation
 {
