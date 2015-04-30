@@ -1,5 +1,7 @@
 <?php namespace Digbang\Doctrine\Metadata;
 
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Illuminate\Config\Repository;
 use Illuminate\Container\Container;
 use Doctrine\ORM\Mapping\Builder\ClassMetadataBuilder;
@@ -29,12 +31,21 @@ class DecoupledMappingDriver implements MappingDriver
 	 */
 	private $embeddables = [];
 
+	/**
+	 * @type EntityManager
+	 */
+	private $entityManager;
+
+	/**
+	 * @type bool
+	 */
 	private $loaded = false;
 
-	function __construct(Repository $config, Container $container)
+	function __construct(Repository $config, Container $container, EntityManager $entityManager)
 	{
 		$this->config = $config;
 		$this->container = $container;
+		$this->entityManager = $entityManager;
 	}
 
 	/**
@@ -58,7 +69,8 @@ class DecoupledMappingDriver implements MappingDriver
 			throw MappingException::invalidMappingFile($className, get_class($metadataClass));
 		}
 
-		$builder = $this->container->make(Builder::class, [new ClassMetadataBuilder($metadata)]);
+		$namingStrategy = $this->entityManager->getConfiguration()->getNamingStrategy();
+		$builder = new Builder(new ClassMetadataBuilder($metadata), $namingStrategy);
 
 		$metadataClass->build($builder);
 	}

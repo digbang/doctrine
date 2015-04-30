@@ -23,11 +23,13 @@ class BelongsTo extends Relation
 		return $this;
 	}
 
-	/** TODO: When 2.5 integrates this change, we'll be able to use it!
+	/**
+	 * @return $this
+	 */
 	public function isPrimaryKey()
 	{
-		$this->associationBuilder->isPrimaryKey();
+		$this->associationBuilder->makePrimaryKey();
 
 		return $this;
-	}*/
+	}
 }

@@ -7,6 +7,8 @@ use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\Events;
 use Doctrine\ORM\Mapping\Builder\ClassMetadataBuilder;
 use Doctrine\ORM\Mapping\Builder\FieldBuilder;
+use Doctrine\ORM\Mapping\MappingException;
+use Doctrine\ORM\Mapping\NamingStrategy;
 
 /**
  * Builder around Doctrine's ClassMetadataBuilder.
@@ -25,6 +27,24 @@ use Doctrine\ORM\Mapping\Builder\FieldBuilder;
  * @method $this setChangeTrackingPolicyDeferredExplicit()
  * @method $this setChangeTrackingPolicyNotify()
  * @method $this addLifecycleEvent($methodName, $event)
+ * @method $this nullableBigint($name, callable $callback = null)
+ * @method $this nullableBoolean($name, callable $callback = null)
+ * @method $this nullableDatetime($name, callable $callback = null)
+ * @method $this nullableDatetimetz($name, callable $callback = null)
+ * @method $this nullableDate($name, callable $callback = null)
+ * @method $this nullableTime($name, callable $callback = null)
+ * @method $this nullableDecimal($name, callable $callback = null)
+ * @method $this nullableInteger($name, callable $callback = null)
+ * @method $this nullableObject($name, callable $callback = null)
+ * @method $this nullableSmallint($name, callable $callback = null)
+ * @method $this nullableString($name, callable $callback = null)
+ * @method $this nullableText($name, callable $callback = null)
+ * @method $this nullableBinary($name, callable $callback = null)
+ * @method $this nullableBlob($name, callable $callback = null)
+ * @method $this nullableFloat($name, callable $callback = null)
+ * @method $this nullableGuid($name, callable $callback = null)
+ * @method $this nullableTsvector($name, callable $callback = null)
+ * @method $this nullableField($type, $name, callable $callback = null)
  */
 class Builder
 {
@@ -33,9 +53,15 @@ class Builder
 	 */
 	private $metadataBuilder;
 
-	public function __construct(ClassMetadataBuilder $metadataBuilder)
+	/**
+	 * @type NamingStrategy
+	 */
+	private $namingStrategy;
+
+	public function __construct(ClassMetadataBuilder $metadataBuilder, NamingStrategy $namingStrategy)
 	{
 		$this->metadataBuilder = $metadataBuilder;
+		$this->namingStrategy  = $namingStrategy;
 	}
 
 	/**
@@ -485,6 +511,27 @@ class Builder
 	}
 
     /**
+	 * Adds an optional manyToOne relation to the entity.
+	 *
+	 * A callback can be passed as a third parameter. If so, the callback will
+	 * receive an instance of Digbang\Doctrine\Metadata\Relations\BelongsTo
+	 * to manipulate the relation.
+	 *
+	 * @param string        $entity
+	 * @param string        $field
+	 * @param callable|null $callback
+	 *
+	 * @return $this
+	 */
+	public function mayBelongTo($entity, $field, Closure $callback = null)
+	{
+		return $this->addRelation(
+			new Relations\BelongsTo($this->metadataBuilder, $entity, $field),
+			$this->nullableBelongsToCallback($field, $callback)
+		);
+	}
+
+    /**
 	 * Adds a manyToMany relation to the entity.
 	 *
 	 * A callback can be passed as a third parameter. If so, the callback will
@@ -589,6 +636,12 @@ class Builder
 	 */
 	public function __call($name, $arguments)
 	{
+		if (strpos($name, 'nullable') !== false)
+		{
+			$method = lcfirst(str_replace('nullable', '', $name));
+			return $this->callNullable($method, $arguments);
+		}
+
 		if (method_exists($this->metadataBuilder, $name))
 		{
 			call_user_func_array([$this->metadataBuilder, $name], $arguments);
@@ -608,5 +661,86 @@ class Builder
 	protected function isInteger($type)
 	{
 		return in_array($type, [Type::INTEGER, Type::BIGINT, Type::SMALLINT]);
+	}
+
+	/**
+	 * @param string $method
+	 * @param array $arguments
+	 *
+	 * @return $this
+	 */
+	private function callNullable($method, array $arguments)
+	{
+		switch ($method)
+		{
+			case 'bigint':
+			case 'boolean':
+			case 'datetime':
+			case 'datetimetz':
+			case 'date':
+			case 'time':
+			case 'decimal':
+			case 'integer':
+			case 'object':
+			case 'smallint':
+			case 'string':
+			case 'text':
+			case 'binary':
+			case 'blob':
+			case 'float':
+			case 'guid':
+			case 'tsvector':
+				list($field, $callback) = array_pad($arguments, 2, null);
+				$newArgs = [$field, $this->nullableFieldCallback($callback)];
+
+				break;
+			case 'field':
+				list($type, $field, $callback) = array_pad($arguments, 3, null);
+				$newArgs = [$type, $field, $this->nullableFieldCallback($callback)];
+
+				break;
+			default:
+				throw new \UnexpectedValueException("Method '$method' cannot be called with the 'nullable' modifier.");
+		}
+
+		return call_user_func_array([$this, $method], $newArgs);
+	}
+
+	/**
+	 * @param callable|null $callback
+	 * @return Closure
+	 */
+	private function nullableFieldCallback(Closure $callback = null)
+	{
+		return function (FieldBuilder $fieldBuilder) use ($callback){
+			$fieldBuilder->nullable();
+
+			if (is_callable($callback))
+			{
+				$callback($fieldBuilder);
+			}
+		};
+	}
+
+	/**
+	 * @param string $field
+	 * @param callable $callback
+	 *
+	 * @return callable
+	 */
+	private function nullableBelongsToCallback($field, Closure $callback = null)
+	{
+		return function (Relations\BelongsTo $belongsTo) use ($field, $callback) {
+			$belongsTo->keys(
+				$this->namingStrategy->joinColumnName($field),
+                $this->namingStrategy->referenceColumnName(),
+				true
+			);
+
+			if ($callback)
+			{
+				$callback($belongsTo);
+			}
+		};
 	}
 }
