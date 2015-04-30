@@ -186,6 +186,14 @@ class BuilderTest extends TestCase
 	}
 
 	/** @test */
+	public function it_should_allow_required_many_to_one_relations()
+	{
+		$this->builder->belongsTo('SomeEntity', 'someEntity');
+
+		$this->assertFalse($this->metadata->associationMappings['someEntity']['joinColumns'][0]['nullable']);
+	}
+
+	/** @test */
 	public function it_should_allow_optional_many_to_one_relations()
 	{
 		$this->builder->mayBelongTo('SomeEntity', 'someEntity');
