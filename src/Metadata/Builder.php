@@ -45,9 +45,51 @@ use Doctrine\ORM\Mapping\NamingStrategy;
  * @method $this nullableGuid($name, callable $callback = null)
  * @method $this nullableTsvector($name, callable $callback = null)
  * @method $this nullableField($type, $name, callable $callback = null)
+ * @method $this uniqueBigint($name, callable $callback = null)
+ * @method $this uniqueBoolean($name, callable $callback = null)
+ * @method $this uniqueDatetime($name, callable $callback = null)
+ * @method $this uniqueDatetimetz($name, callable $callback = null)
+ * @method $this uniqueDate($name, callable $callback = null)
+ * @method $this uniqueTime($name, callable $callback = null)
+ * @method $this uniqueDecimal($name, callable $callback = null)
+ * @method $this uniqueInteger($name, callable $callback = null)
+ * @method $this uniqueObject($name, callable $callback = null)
+ * @method $this uniqueSmallint($name, callable $callback = null)
+ * @method $this uniqueString($name, callable $callback = null)
+ * @method $this uniqueText($name, callable $callback = null)
+ * @method $this uniqueBinary($name, callable $callback = null)
+ * @method $this uniqueBlob($name, callable $callback = null)
+ * @method $this uniqueFloat($name, callable $callback = null)
+ * @method $this uniqueGuid($name, callable $callback = null)
+ * @method $this uniqueTsvector($name, callable $callback = null)
+ * @method $this uniqueField($type, $name, callable $callback = null)
  */
 class Builder
 {
+	/**
+	 * flyweight array of available field types
+	 * @type array
+	 */
+	private $types = [
+		'bigint',
+		'boolean',
+		'datetime',
+		'datetimetz',
+		'date',
+		'time',
+		'decimal',
+		'integer',
+		'object',
+		'smallint',
+		'string',
+		'text',
+		'binary',
+		'blob',
+		'float',
+		'guid',
+		'tsvector'
+	];
+
 	/**
 	 * @type \Doctrine\ORM\Mapping\Builder\ClassMetadataBuilder
 	 */
@@ -642,6 +684,12 @@ class Builder
 			return $this->callNullable($method, $arguments);
 		}
 
+		if (strpos($name, 'unique') !== false)
+		{
+			$method = lcfirst(str_replace('unique', '', $name));
+			return $this->callUnique($method, $arguments);
+		}
+
 		if (method_exists($this->metadataBuilder, $name))
 		{
 			call_user_func_array([$this->metadataBuilder, $name], $arguments);
@@ -671,36 +719,47 @@ class Builder
 	 */
 	private function callNullable($method, array $arguments)
 	{
-		switch ($method)
+		switch (true)
 		{
-			case 'bigint':
-			case 'boolean':
-			case 'datetime':
-			case 'datetimetz':
-			case 'date':
-			case 'time':
-			case 'decimal':
-			case 'integer':
-			case 'object':
-			case 'smallint':
-			case 'string':
-			case 'text':
-			case 'binary':
-			case 'blob':
-			case 'float':
-			case 'guid':
-			case 'tsvector':
+			case in_array($method, $this->types):
 				list($field, $callback) = array_pad($arguments, 2, null);
 				$newArgs = [$field, $this->nullableFieldCallback($callback)];
 
 				break;
-			case 'field':
+			case ($method == 'field'):
 				list($type, $field, $callback) = array_pad($arguments, 3, null);
 				$newArgs = [$type, $field, $this->nullableFieldCallback($callback)];
 
 				break;
 			default:
 				throw new \UnexpectedValueException("Method '$method' cannot be called with the 'nullable' modifier.");
+		}
+
+		return call_user_func_array([$this, $method], $newArgs);
+	}
+
+	/**
+	 * @param string $method
+	 * @param array $arguments
+	 *
+	 * @return $this
+	 */
+	private function callUnique($method, array $arguments)
+	{
+		switch (true)
+		{
+			case in_array($method, $this->types):
+				list($field, $callback) = array_pad($arguments, 2, null);
+				$newArgs = [$field, $this->uniqueFieldCallback($callback)];
+
+				break;
+			case ($method == 'field'):
+				list($type, $field, $callback) = array_pad($arguments, 3, null);
+				$newArgs = [$type, $field, $this->uniqueFieldCallback($callback)];
+
+				break;
+			default:
+				throw new \UnexpectedValueException("Method '$method' cannot be called with the 'unique' modifier.");
 		}
 
 		return call_user_func_array([$this, $method], $newArgs);
@@ -714,6 +773,22 @@ class Builder
 	{
 		return function (FieldBuilder $fieldBuilder) use ($callback){
 			$fieldBuilder->nullable();
+
+			if (is_callable($callback))
+			{
+				$callback($fieldBuilder);
+			}
+		};
+	}
+
+	/**
+	 * @param callable|null $callback
+	 * @return Closure
+	 */
+	private function uniqueFieldCallback(Closure $callback = null)
+	{
+		return function (FieldBuilder $fieldBuilder) use ($callback){
+			$fieldBuilder->unique();
 
 			if (is_callable($callback))
 			{

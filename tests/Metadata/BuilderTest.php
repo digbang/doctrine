@@ -4,6 +4,7 @@ use Digbang\Doctrine\LaravelNamingStrategy;
 use Digbang\Doctrine\Metadata\Builder;
 use Doctrine\ORM\Mapping\Builder\ClassMetadataBuilder;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
+use Doctrine\ORM\Mapping\NamingStrategy;
 use Illuminate\Support\Str;
 use Tests\Fixtures\EmailIdentityEntity;
 use Tests\TestCase;
@@ -20,160 +21,54 @@ class BuilderTest extends TestCase
 	 */
 	private $metadata;
 
+	/**
+	 * @type array
+	 */
+	private $types;
+
+	/**
+	 * @type NamingStrategy
+	 */
+	private $namingStrategy;
+
 	public function setUp()
 	{
-		$namingStrategy = new LaravelNamingStrategy(new Str);
+		$this->namingStrategy = new LaravelNamingStrategy(new Str);
+		$this->builder = $this->newBuilder();
 
-		$this->builder = new Builder(
+		$ref = new \ReflectionProperty($this->builder, 'types');
+		$ref->setAccessible(true);
+		$this->types = $ref->getValue($this->builder);
+	}
+
+	private function newBuilder()
+	{
+		return new Builder(
 			new ClassMetadataBuilder(
-				$this->metadata = new ClassMetadataInfo(EmailIdentityEntity::class, $namingStrategy)
+				$this->metadata = new ClassMetadataInfo(EmailIdentityEntity::class, $this->namingStrategy)
 			),
-			$namingStrategy
+			$this->namingStrategy
 		);
 	}
 
-	/** @test */
-	public function it_should_have_a_magic_way_to_make_nullable_bigints_easily()
+	public function doMagicMethodForAllTypes($prefix, $args, $assertion)
 	{
-		$this->builder->nullableBigint('field');
+		foreach ($this->types as $type)
+		{
+			$func = $prefix . ucfirst($type);
 
-		$this->assertTrue($this->metadata->fieldMappings['field']['nullable']);
+			call_user_func_array([$this->newBuilder(), $func], $args);
+
+			$assertion();
+		}
 	}
 
 	/** @test */
-	public function it_should_have_a_magic_way_to_make_nullable_booleans_easily()
+	public function it_should_allow_a_nullable_prefix_on_all_field_types()
 	{
-		$this->builder->nullableBoolean('field');
-
-		$this->assertTrue($this->metadata->fieldMappings['field']['nullable']);
-	}
-
-	/** @test */
-	public function it_should_have_a_magic_way_to_make_nullable_datetimes_easily()
-	{
-		$this->builder->nullableDatetime('field');
-
-		$this->assertTrue($this->metadata->fieldMappings['field']['nullable']);
-	}
-
-	/** @test */
-	public function it_should_have_a_magic_way_to_make_nullable_datetimetzs_easily()
-	{
-		$this->builder->nullableDatetimetz('field');
-
-		$this->assertTrue($this->metadata->fieldMappings['field']['nullable']);
-	}
-
-	/** @test */
-	public function it_should_have_a_magic_way_to_make_nullable_dates_easily()
-	{
-		$this->builder->nullableDate('field');
-
-		$this->assertTrue($this->metadata->fieldMappings['field']['nullable']);
-	}
-
-	/** @test */
-	public function it_should_have_a_magic_way_to_make_nullable_times_easily()
-	{
-		$this->builder->nullableTime('field');
-
-		$this->assertTrue($this->metadata->fieldMappings['field']['nullable']);
-	}
-
-	/** @test */
-	public function it_should_have_a_magic_way_to_make_nullable_decimals_easily()
-	{
-		$this->builder->nullableDecimal('field');
-
-		$this->assertTrue($this->metadata->fieldMappings['field']['nullable']);
-	}
-
-	/** @test */
-	public function it_should_have_a_magic_way_to_make_nullable_integers_easily()
-	{
-		$this->builder->nullableInteger('field');
-
-		$this->assertTrue($this->metadata->fieldMappings['field']['nullable']);
-	}
-
-	/** @test */
-	public function it_should_have_a_magic_way_to_make_nullable_objects_easily()
-	{
-		$this->builder->nullableObject('field');
-
-		$this->assertTrue($this->metadata->fieldMappings['field']['nullable']);
-	}
-
-	/** @test */
-	public function it_should_have_a_magic_way_to_make_nullable_smallints_easily()
-	{
-		$this->builder->nullableSmallint('field');
-
-		$this->assertTrue($this->metadata->fieldMappings['field']['nullable']);
-	}
-
-	/** @test */
-	public function it_should_have_a_magic_way_to_make_nullable_strings_easily()
-	{
-		$this->builder->nullableString('field');
-
-		$this->assertTrue($this->metadata->fieldMappings['field']['nullable']);
-	}
-
-	/** @test */
-	public function it_should_have_a_magic_way_to_make_nullable_texts_easily()
-	{
-		$this->builder->nullableText('field');
-
-		$this->assertTrue($this->metadata->fieldMappings['field']['nullable']);
-	}
-
-	/** @test */
-	public function it_should_have_a_magic_way_to_make_nullable_binaries_easily()
-	{
-		$this->builder->nullableBinary('field');
-
-		$this->assertTrue($this->metadata->fieldMappings['field']['nullable']);
-	}
-
-	/** @test */
-	public function it_should_have_a_magic_way_to_make_nullable_blobs_easily()
-	{
-		$this->builder->nullableBlob('field');
-
-		$this->assertTrue($this->metadata->fieldMappings['field']['nullable']);
-	}
-
-	/** @test */
-	public function it_should_have_a_magic_way_to_make_nullable_floats_easily()
-	{
-		$this->builder->nullableFloat('field');
-
-		$this->assertTrue($this->metadata->fieldMappings['field']['nullable']);
-	}
-
-	/** @test */
-	public function it_should_have_a_magic_way_to_make_nullable_guids_easily()
-	{
-		$this->builder->nullableGuid('field');
-
-		$this->assertTrue($this->metadata->fieldMappings['field']['nullable']);
-	}
-
-	/** @test */
-	public function it_should_have_a_magic_way_to_make_nullable_tsvectors_easily()
-	{
-		$this->builder->nullableTsvector('field');
-
-		$this->assertTrue($this->metadata->fieldMappings['field']['nullable']);
-	}
-
-	/** @test */
-	public function it_should_have_a_magic_way_to_make_nullable_fields_easily()
-	{
-		$this->builder->nullableField('my_custom_type', 'field');
-
-		$this->assertTrue($this->metadata->fieldMappings['field']['nullable']);
+		$this->doMagicMethodForAllTypes('nullable', ['field'], function(){
+			$this->assertTrue($this->metadata->fieldMappings['field']['nullable']);
+		});
 	}
 
 	/** @test */
@@ -199,5 +94,22 @@ class BuilderTest extends TestCase
 		$this->builder->mayBelongTo('SomeEntity', 'someEntity');
 
 		$this->assertTrue($this->metadata->associationMappings['someEntity']['joinColumns'][0]['nullable']);
+	}
+
+	/** @test */
+	public function it_should_allow_a_unique_prefix_in_all_field_types()
+	{
+		$this->doMagicMethodForAllTypes('unique', ['field'], function(){
+			$this->assertTrue($this->metadata->fieldMappings['field']['unique']);
+		});
+	}
+
+	/** @test */
+	public function it_shouldnt_allow_other_unique_cases()
+	{
+		$this->setExpectedException(\UnexpectedValueException::class);
+
+		$this->builder->uniqueBelongsTo('foo');
+		$this->builder->uniqueEmbeddable('SomeClass', 'someClass');
 	}
 }
