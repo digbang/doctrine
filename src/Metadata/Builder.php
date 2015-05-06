@@ -547,8 +547,8 @@ class Builder
 	public function belongsTo($entity, $field, Closure $callback = null)
 	{
 		return $this->addRelation(
-			new Relations\BelongsTo($this->metadataBuilder, $entity, $field),
-			$this->makeBelongsToCallback($field, $callback, false)
+			new Relations\BelongsTo($this->metadataBuilder, $this->namingStrategy, $entity, $field),
+			$callback
 		);
 	}
 
@@ -568,8 +568,8 @@ class Builder
 	public function mayBelongTo($entity, $field, Closure $callback = null)
 	{
 		return $this->addRelation(
-			new Relations\BelongsTo($this->metadataBuilder, $entity, $field),
-			$this->makeBelongsToCallback($field, $callback, true)
+			new Relations\BelongsTo($this->metadataBuilder, $this->namingStrategy, $entity, $field),
+			$this->makeMayBelongToCallback($field, $callback)
 		);
 	}
 
@@ -803,13 +803,13 @@ class Builder
 	 *
 	 * @return callable
 	 */
-	private function makeBelongsToCallback($field, Closure $callback = null, $nullable = false)
+	private function makeMayBelongToCallback($field, Closure $callback = null)
 	{
-		return function (Relations\BelongsTo $belongsTo) use ($field, $callback, $nullable) {
+		return function (Relations\BelongsTo $belongsTo) use ($field, $callback) {
 			$belongsTo->keys(
 				$this->namingStrategy->joinColumnName($field),
                 $this->namingStrategy->referenceColumnName(),
-				$nullable
+				true
 			);
 
 			if ($callback)

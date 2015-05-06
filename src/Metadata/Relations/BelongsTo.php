@@ -1,12 +1,27 @@
 <?php namespace Digbang\Doctrine\Metadata\Relations;
 
 use Doctrine\ORM\Mapping\Builder\ClassMetadataBuilder;
+use Doctrine\ORM\Mapping\NamingStrategy;
 
 class BelongsTo extends Relation
 {
-	public function __construct(ClassMetadataBuilder $metadataBuilder, $entityName, $relation)
+	private $keys = [];
+
+	/**
+	 * @type NamingStrategy
+	 */
+	private $namingStrategy;
+
+	/**
+	 * @type string
+	 */
+	private $relation;
+
+	public function __construct(ClassMetadataBuilder $metadataBuilder, NamingStrategy $namingStrategy, $entityName, $relation)
 	{
 		$this->associationBuilder = $metadataBuilder->createManyToOne($relation, $entityName);
+		$this->namingStrategy = $namingStrategy;
+		$this->relation = $relation;
 	}
 
 	/**
@@ -18,7 +33,7 @@ class BelongsTo extends Relation
 	 */
 	public function keys($foreignKey, $otherKey = 'id', $nullable = false)
 	{
-		$this->associationBuilder->addJoinColumn($foreignKey, $otherKey, $nullable);
+		$this->keys[] = [$foreignKey, $otherKey, $nullable];
 
 		return $this;
 	}
@@ -31,5 +46,26 @@ class BelongsTo extends Relation
 		$this->associationBuilder->makePrimaryKey();
 
 		return $this;
+	}
+
+	public function build()
+	{
+		if (empty($this->keys))
+		{
+			$this->keys(
+				$this->namingStrategy->joinColumnName($this->relation),
+                $this->namingStrategy->referenceColumnName(),
+				false
+			);
+		}
+
+		foreach ($this->keys as $key)
+		{
+			list($foreignKey, $otherKey, $nullable) = $key;
+
+			$this->associationBuilder->addJoinColumn($foreignKey, $otherKey, $nullable);
+		}
+
+		$this->associationBuilder->build();
 	}
 }
