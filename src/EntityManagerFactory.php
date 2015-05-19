@@ -3,6 +3,9 @@
 use Digbang\Doctrine\Bridges\CacheBridge;
 use Digbang\Doctrine\Bridges\DatabaseConfigurationBridge;
 use Digbang\Doctrine\Bridges\EventManagerBridge;
+use Digbang\Doctrine\Events\EntityManagerCreated;
+use Digbang\Doctrine\Events\EntityManagerCreating;
+use Digbang\Doctrine\Filters\TrashedFilter;
 use Digbang\Doctrine\Listeners\SoftDeletableListener;
 use Digbang\Doctrine\Metadata\DecoupledMappingDriver;
 use Digbang\Doctrine\Query\AST\Functions\TsqueryFunction;
@@ -12,19 +15,18 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Events;
 use Doctrine\ORM\Tools\Setup;
 use Illuminate\Config\Repository;
-use Digbang\Doctrine\Filters\TrashedFilter;
 
 class EntityManagerFactory
 {
-    /**
-     * @type Repository
-     */
-    private $config;
+	/**
+	 * @type Repository
+	 */
+	private $config;
 
-    /**
-     * @type CacheBridge
-     */
-    private $cacheBridge;
+	/**
+	 * @type CacheBridge
+	 */
+	private $cacheBridge;
 
 	/**
 	 * @type DatabaseConfigurationBridge
@@ -32,137 +34,167 @@ class EntityManagerFactory
 	private $databaseConfigurationBridge;
 
 	/**
-	 * @type \Digbang\Doctrine\RepositoryFactory
+	 * @type RepositoryFactory
 	 */
 	private $repositoryFactory;
 
 	/**
-	 * @type \Digbang\Doctrine\LaravelNamingStrategy
+	 * @type LaravelNamingStrategy
 	 */
 	private $laravelNamingStrategy;
 
 	/**
-	 * @type \Digbang\Doctrine\Metadata\DecoupledMappingDriver
+	 * @type DecoupledMappingDriver
 	 */
 	private $decoupledMappingDriver;
 
 	/**
-	 * @type \Digbang\Doctrine\Bridges\EventManagerBridge
+	 * @type EventManagerBridge
 	 */
 	private $eventManagerBridge;
 
 	/**
-	 * @param Repository                    $config
-	 * @param CacheBridge                   $cacheBridge
-	 * @param DatabaseConfigurationBridge   $databaseConfigurationBridge
-	 * @param RepositoryFactory             $repositoryFactory
-	 * @param LaravelNamingStrategy         $laravelNamingStrategy
-	 * @param DecoupledMappingDriver        $decoupledMappingDriver
-	 * @param EventManagerBridge            $eventManagerBridge
+	 * @param Repository                  $config
+	 * @param CacheBridge                 $cacheBridge
+	 * @param DatabaseConfigurationBridge $databaseConfigurationBridge
+	 * @param RepositoryFactory           $repositoryFactory
+	 * @param LaravelNamingStrategy       $laravelNamingStrategy
+	 * @param DecoupledMappingDriver      $decoupledMappingDriver
+	 * @param EventManagerBridge          $eventManagerBridge
 	 */
-    public function __construct(
-	    Repository                  $config,
-	    CacheBridge                 $cacheBridge,
-		DatabaseConfigurationBridge $databaseConfigurationBridge,
-		RepositoryFactory           $repositoryFactory,
-		LaravelNamingStrategy       $laravelNamingStrategy,
-		DecoupledMappingDriver      $decoupledMappingDriver,
-		EventManagerBridge          $eventManagerBridge
-    )
-    {
-        $this->config                      = $config;
-        $this->cacheBridge                 = $cacheBridge;
-	    $this->databaseConfigurationBridge = $databaseConfigurationBridge;
-	    $this->repositoryFactory           = $repositoryFactory;
-	    $this->laravelNamingStrategy       = $laravelNamingStrategy;
-	    $this->decoupledMappingDriver      = $decoupledMappingDriver;
-	    $this->eventManagerBridge          = $eventManagerBridge;
-    }
+	public function __construct(Repository $config, CacheBridge $cacheBridge, DatabaseConfigurationBridge $databaseConfigurationBridge, RepositoryFactory $repositoryFactory, LaravelNamingStrategy $laravelNamingStrategy, DecoupledMappingDriver $decoupledMappingDriver, EventManagerBridge $eventManagerBridge)
+	{
+		$this->config                      = $config;
+		$this->cacheBridge                 = $cacheBridge;
+		$this->databaseConfigurationBridge = $databaseConfigurationBridge;
+		$this->repositoryFactory           = $repositoryFactory;
+		$this->laravelNamingStrategy       = $laravelNamingStrategy;
+		$this->decoupledMappingDriver      = $decoupledMappingDriver;
+		$this->eventManagerBridge          = $eventManagerBridge;
+	}
 
-    /**
-     * @return \Doctrine\ORM\EntityManager
-     */
-    public function create(\DebugBar\DebugBar $debugBar = null)
-    {
-        $configuration = $this->createConfiguration();
+	/**
+	 * @return EntityManager
+	 */
+	public function create(\DebugBar\DebugBar $debugBar = null)
+	{
+		$configuration = $this->createConfiguration();
 
-        if ($this->config->get('doctrine::cache.enabled'))
-        {
-            $this->addCacheImplementation($configuration);
-        }
+		if ($this->config->get('doctrine::cache.enabled'))
+		{
+			$this->addCacheImplementation($configuration);
+		}
 
-        $conn = $this->databaseConfigurationBridge->getConnection();
+		$conn = $this->databaseConfigurationBridge->getConnection();
 
-        if ($debugBar !== null)
-        {
-            $this->addLogger($debugBar, $configuration);
-        }
+		if ($debugBar !== null)
+		{
+			$this->addLogger($debugBar, $configuration);
+		}
 
-        $this->eventManagerBridge->addEventListener(Events::onFlush, new SoftDeletableListener());
+		$this->eventManagerBridge->addEventListener(Events::onFlush, new SoftDeletableListener());
 
-        $entityManager = EntityManager::create($conn, $configuration, $this->eventManagerBridge);
-        $entityManager->getFilters()->enable('trashed');
+		$this->fireCreatingEvent($conn, $configuration);
 
-	    $entityManager->getConnection()->getDatabasePlatform()->registerDoctrineTypeMapping('TSVECTOR', Types\TsvectorType::TSVECTOR);
+		$entityManager = EntityManager::create($conn, $configuration, $this->eventManagerBridge);
+		$entityManager->getFilters()->enable('trashed');
 
-        return $entityManager;
-    }
+		$entityManager->getConnection()->getDatabasePlatform()->registerDoctrineTypeMapping(
+			'TSVECTOR',
+			Types\TsvectorType::TSVECTOR
+		);
 
-    /**
-     * @param \DebugBar\DebugBar $debugBar
-     * @param Configuration      $configuration
-     *
-     * @throws \DebugBar\DebugBarException
-     */
-    private function addLogger(\DebugBar\DebugBar $debugBar, Configuration $configuration)
-    {
-        $debugStack = new \Doctrine\DBAL\Logging\DebugStack();
-        $configuration->setSQLLogger($debugStack);
+		$this->fireCreatedEvent($entityManager);
 
-        $debugBar->addCollector(new \DebugBar\Bridge\DoctrineCollector($debugStack));
-    }
+		return $entityManager;
+	}
 
-    /**
-     * @param Configuration $configuration
-     */
-    private function addCacheImplementation(Configuration $configuration)
-    {
-        if ($this->config->get('doctrine::cache.hydration'))
-        {
-            $configuration->setHydrationCacheImpl($this->cacheBridge);
-        }
+	/**
+	 * @param \DebugBar\DebugBar $debugBar
+	 * @param Configuration      $configuration
+	 *
+	 * @throws \DebugBar\DebugBarException
+	 */
+	private function addLogger(\DebugBar\DebugBar $debugBar, Configuration $configuration)
+	{
+		$debugStack = new \Doctrine\DBAL\Logging\DebugStack();
+		$configuration->setSQLLogger($debugStack);
 
-        if ($this->config->get('doctrine::cache.query'))
-        {
-            $configuration->setQueryCacheImpl($this->cacheBridge);
-        }
+		$debugBar->addCollector(new \DebugBar\Bridge\DoctrineCollector($debugStack));
+	}
 
-        if ($this->config->get('doctrine::cache.result'))
-        {
-            $configuration->setResultCacheImpl($this->cacheBridge);
-        }
+	/**
+	 * @param Configuration $configuration
+	 */
+	private function addCacheImplementation(Configuration $configuration)
+	{
+		if ($this->config->get('doctrine::cache.hydration'))
+		{
+			$configuration->setHydrationCacheImpl($this->cacheBridge);
+		}
 
-        if ($this->config->get('doctrine::cache.metadata'))
-        {
-            $configuration->setMetadataCacheImpl($this->cacheBridge);
-        }
-    }
+		if ($this->config->get('doctrine::cache.query'))
+		{
+			$configuration->setQueryCacheImpl($this->cacheBridge);
+		}
 
-    protected function createConfiguration()
-    {
-        $configuration = Setup::createConfiguration(
-            $this->config->get('app.debug'),
-            $this->config->get('doctrine::doctrine.proxies.directory'),
-            $this->cacheBridge
-        );
-        $configuration->setMetadataDriverImpl($this->decoupledMappingDriver);
-        $configuration->setAutoGenerateProxyClasses($this->config->get('doctrine::doctrine.proxies.autogenerate', true));
-        $configuration->setRepositoryFactory($this->repositoryFactory);
-        $configuration->setNamingStrategy($this->laravelNamingStrategy);
-        $configuration->addFilter('trashed', TrashedFilter::class);
-	    $configuration->addCustomStringFunction(TsqueryFunction::TSQUERY, TsqueryFunction::class);
-	    $configuration->addCustomStringFunction(TsrankFunction::TSRANK, TsrankFunction::class);
+		if ($this->config->get('doctrine::cache.result'))
+		{
+			$configuration->setResultCacheImpl($this->cacheBridge);
+		}
 
-        return $configuration;
-    }
+		if ($this->config->get('doctrine::cache.metadata'))
+		{
+			$configuration->setMetadataCacheImpl($this->cacheBridge);
+		}
+	}
+
+	/**
+	 * @return Configuration
+	 * @throws \Doctrine\ORM\ORMException
+	 */
+	protected function createConfiguration()
+	{
+		$configuration = Setup::createConfiguration(
+			$this->config->get('app.debug'),
+			$this->config->get('doctrine::doctrine.proxies.directory'),
+			$this->cacheBridge
+		);
+		$configuration->setMetadataDriverImpl($this->decoupledMappingDriver);
+		$configuration->setAutoGenerateProxyClasses(
+			$this->config->get('doctrine::doctrine.proxies.autogenerate', true)
+		);
+		$configuration->setRepositoryFactory($this->repositoryFactory);
+		$configuration->setNamingStrategy($this->laravelNamingStrategy);
+		$configuration->addFilter('trashed', TrashedFilter::class);
+		$configuration->addCustomStringFunction(TsqueryFunction::TSQUERY, TsqueryFunction::class);
+		$configuration->addCustomStringFunction(TsrankFunction::TSRANK, TsrankFunction::class);
+
+		return $configuration;
+	}
+
+	/**
+	 * @param $conn
+	 * @param Configuration $configuration
+	 */
+	private function fireCreatingEvent($conn, Configuration $configuration)
+	{
+		$this->eventManagerBridge->dispatchEvent(
+			EntityManagerCreating::class,
+			new EntityManagerCreating(
+				$conn, $configuration, $this->eventManagerBridge
+			)
+		);
+	}
+
+	/**
+	 * @param EntityManager $entityManager
+	 */
+	private function fireCreatedEvent(EntityManager $entityManager)
+	{
+		$this->eventManagerBridge->dispatchEvent(
+			EntityManagerCreated::class,
+			new EntityManagerCreated($entityManager)
+		);
+	}
 }
