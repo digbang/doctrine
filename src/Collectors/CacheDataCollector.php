@@ -25,11 +25,9 @@ class CacheDataCollector extends DataCollector implements DataCollectorInterface
 	function collect()
 	{
 		return [
-			'cache' => [
-				'hits'   => $this->cacheLogger->getHitCount(),
-				'misses' => $this->cacheLogger->getMissCount(),
-				'puts'   => $this->cacheLogger->getPutCount()
-			]
+			'hits'   => $this->cacheLogger->getHitCount(),
+			'misses' => $this->cacheLogger->getMissCount(),
+			'puts'   => $this->cacheLogger->getPutCount()
 		];
 	}
 
@@ -48,9 +46,15 @@ class CacheDataCollector extends DataCollector implements DataCollectorInterface
 		return [
 			'cache' => [
 				'icon' => 'archive',
+				'widget' => 'PhpDebugBar.Widgets.VariableListWidget',
 				'tooltip' => 'Cache information',
 				'map' => 'cache',
-				'title' => 'Cache'
+				'title' => 'Cache',
+				'default' => '[]'
+			],
+			'cache:badge' => [
+				'map' => 'cache.hits',
+				"default" => 0
 			]
 		];
 	}
