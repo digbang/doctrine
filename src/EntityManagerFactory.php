@@ -3,15 +3,20 @@
 use Digbang\Doctrine\Bridges\CacheBridge;
 use Digbang\Doctrine\Bridges\DatabaseConfigurationBridge;
 use Digbang\Doctrine\Bridges\EventManagerBridge;
+use Digbang\Doctrine\Collectors\CacheDataCollector;
 use Digbang\Doctrine\Events\EntityManagerCreated;
 use Digbang\Doctrine\Events\EntityManagerCreating;
 use Digbang\Doctrine\Filters\TrashedFilter;
 use Digbang\Doctrine\Listeners\SoftDeletableListener;
 use Digbang\Doctrine\Metadata\DecoupledMappingDriver;
 use Digbang\Doctrine\Query\AST\Functions\PlainTsqueryFunction;
+use Digbang\Doctrine\Query\AST\Functions\PlainTsrankFunction;
 use Digbang\Doctrine\Query\AST\Functions\TsqueryFunction;
 use Digbang\Doctrine\Query\AST\Functions\TsrankFunction;
+use Doctrine\DBAL\Logging\DebugStack;
+use Doctrine\ORM\Cache\CacheConfiguration;
 use Doctrine\ORM\Cache\DefaultCacheFactory;
+use Doctrine\ORM\Cache\Logging\StatisticsCacheLogger;
 use Doctrine\ORM\Cache\RegionsConfiguration;
 use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManager;
@@ -85,14 +90,14 @@ class EntityManagerFactory
 
 		if ($this->config->get('doctrine::cache.enabled'))
 		{
-			$this->addCacheImplementation($configuration);
+			$this->addCacheImplementation($configuration, $debugBar);
 		}
 
 		$conn = $this->databaseConfigurationBridge->getConnection();
 
 		if ($debugBar !== null)
 		{
-			$this->addLogger($debugBar, $configuration);
+			$this->addSQLLogger($debugBar, $configuration);
 		}
 
 		$this->eventManagerBridge->addEventListener(Events::onFlush, new SoftDeletableListener());
@@ -118,18 +123,31 @@ class EntityManagerFactory
 	 *
 	 * @throws \DebugBar\DebugBarException
 	 */
-	private function addLogger(\DebugBar\DebugBar $debugBar, Configuration $configuration)
+	private function addSQLLogger(\DebugBar\DebugBar $debugBar, Configuration $configuration)
 	{
-		$debugStack = new \Doctrine\DBAL\Logging\DebugStack();
+		$debugStack = new DebugStack();
 		$configuration->setSQLLogger($debugStack);
-
 		$debugBar->addCollector(new \DebugBar\Bridge\DoctrineCollector($debugStack));
+	}
+
+	/**
+	 * @param \DebugBar\DebugBar               $debugBar
+	 * @param CacheConfiguration $configuration
+	 *
+	 * @throws \DebugBar\DebugBarException
+	 */
+	private function addCacheLogger(\DebugBar\DebugBar $debugBar, CacheConfiguration $configuration)
+	{
+		$cacheLogger = new StatisticsCacheLogger();
+		$configuration->setCacheLogger($cacheLogger);
+
+		$debugBar->addCollector(new CacheDataCollector($cacheLogger));
 	}
 
 	/**
 	 * @param Configuration $configuration
 	 */
-	private function addCacheImplementation(Configuration $configuration)
+	private function addCacheImplementation(Configuration $configuration, \DebugBar\DebugBar $debugBar = null)
 	{
 		if ($this->config->get('doctrine::cache.hydration'))
 		{
@@ -164,6 +182,11 @@ class EntityManagerFactory
 			$cacheFactory->setFileLockRegionDirectory($this->config->get('doctrine::doctrine.lock_files.directory'));
 
 			$cacheConfig->setCacheFactory($cacheFactory);
+
+			if ($debugBar)
+			{
+				$this->addCacheLogger($debugBar, $cacheConfig);
+			}
 		}
 	}
 
@@ -188,6 +211,7 @@ class EntityManagerFactory
 		$configuration->addCustomStringFunction(TsqueryFunction::TSQUERY, TsqueryFunction::class);
 		$configuration->addCustomStringFunction(PlainTsqueryFunction::PLAIN_TSQUERY, PlainTsqueryFunction::class);
 		$configuration->addCustomStringFunction(TsrankFunction::TSRANK, TsrankFunction::class);
+		$configuration->addCustomStringFunction(PlainTsrankFunction::PLAIN_TSRANK, PlainTsrankFunction::class);
 
 		return $configuration;
 	}

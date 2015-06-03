@@ -114,10 +114,20 @@ class DoctrineServiceProvider extends ServiceProvider
 
     private function registerTypes()
     {
-        Type::addType(Types\CarbonType::DATETIMETZ, Types\CarbonDateTimeTzType::class);
-        Type::addType(Types\CarbonType::DATETIME,   Types\CarbonDateTimeType::class);
-        Type::addType(Types\CarbonType::DATE,       Types\CarbonDateType::class);
-        Type::addType(Types\CarbonType::TIME,       Types\CarbonTimeType::class);
-        Type::addType(Types\TsvectorType::TSVECTOR, Types\TsvectorType::class);
+	    foreach (
+		    [
+			    Types\CarbonType::DATETIMETZ => Types\CarbonDateTimeTzType::class,
+				Types\CarbonType::DATETIME   => Types\CarbonDateTimeType::class,
+				Types\CarbonType::DATE       => Types\CarbonDateType::class,
+				Types\CarbonType::TIME       => Types\CarbonTimeType::class,
+				Types\TsvectorType::TSVECTOR => Types\TsvectorType::class,
+		    ]
+		    as $type => $class)
+	    {
+		    if (! Type::hasType($type))
+		    {
+			    Type::addType($type, $class);
+		    }
+	    }
     }
 }
