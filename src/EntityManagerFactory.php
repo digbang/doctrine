@@ -8,6 +8,7 @@ use Digbang\Doctrine\Events\EntityManagerCreating;
 use Digbang\Doctrine\Filters\TrashedFilter;
 use Digbang\Doctrine\Listeners\SoftDeletableListener;
 use Digbang\Doctrine\Metadata\DecoupledMappingDriver;
+use Digbang\Doctrine\Query\AST\Functions\PlainTsqueryFunction;
 use Digbang\Doctrine\Query\AST\Functions\TsqueryFunction;
 use Digbang\Doctrine\Query\AST\Functions\TsrankFunction;
 use Doctrine\ORM\Configuration;
@@ -168,6 +169,7 @@ class EntityManagerFactory
 		$configuration->setNamingStrategy($this->laravelNamingStrategy);
 		$configuration->addFilter('trashed', TrashedFilter::class);
 		$configuration->addCustomStringFunction(TsqueryFunction::TSQUERY, TsqueryFunction::class);
+		$configuration->addCustomStringFunction(PlainTsqueryFunction::PLAIN_TSQUERY, PlainTsqueryFunction::class);
 		$configuration->addCustomStringFunction(TsrankFunction::TSRANK, TsrankFunction::class);
 
 		return $configuration;
