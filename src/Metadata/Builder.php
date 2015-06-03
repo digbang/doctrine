@@ -7,6 +7,7 @@ use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\Events;
 use Doctrine\ORM\Mapping\Builder\ClassMetadataBuilder;
 use Doctrine\ORM\Mapping\Builder\FieldBuilder;
+use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use Doctrine\ORM\Mapping\MappingException;
 use Doctrine\ORM\Mapping\NamingStrategy;
 
@@ -654,6 +655,31 @@ class Builder
 		}
 
 		$relation->build();
+
+		return $this;
+	}
+
+	/**
+	 * Enables second-level cache on this entity.
+	 *
+	 * If you want to enable second-level cache,
+	 * you must enable it on the EntityManager configuration.
+	 *
+	 * Depending on the cache mode selected, you may also need to configure
+	 * lock modes.
+	 *
+	 * @param int         $usage  Cache mode. use ClassMetadataInfo::CACHE_USAGE_* constants.
+	 *                            Defaults to READ_ONLY mode.
+	 * @param string|null $region The cache region to be used. Doctrine will use a default region
+	 *                            for each entity, if none is provided.
+	 *
+	 * @return $this
+	 * @see http://doctrine-orm.readthedocs.org/en/latest/reference/second-level-cache.html
+	 */
+	public function cacheable($usage = ClassMetadataInfo::CACHE_USAGE_READ_ONLY, $region = null)
+	{
+		$classMetadata = $this->metadataBuilder->getClassMetadata();
+		$classMetadata->enableCache(compact('usage', $region === null ?: 'region'));
 
 		return $this;
 	}

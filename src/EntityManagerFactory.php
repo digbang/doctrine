@@ -11,6 +11,8 @@ use Digbang\Doctrine\Metadata\DecoupledMappingDriver;
 use Digbang\Doctrine\Query\AST\Functions\PlainTsqueryFunction;
 use Digbang\Doctrine\Query\AST\Functions\TsqueryFunction;
 use Digbang\Doctrine\Query\AST\Functions\TsrankFunction;
+use Doctrine\ORM\Cache\DefaultCacheFactory;
+use Doctrine\ORM\Cache\RegionsConfiguration;
 use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Events;
@@ -147,6 +149,21 @@ class EntityManagerFactory
 		if ($this->config->get('doctrine::cache.metadata'))
 		{
 			$configuration->setMetadataCacheImpl($this->cacheBridge);
+		}
+
+		if ($this->config->get('doctrine::cache.entities'))
+		{
+			$configuration->setSecondLevelCacheEnabled();
+
+			$cacheConfig = $configuration->getSecondLevelCacheConfiguration();
+
+			$cacheFactory = new DefaultCacheFactory(
+				new RegionsConfiguration,
+				$this->cacheBridge
+			);
+			$cacheFactory->setFileLockRegionDirectory($this->config->get('doctrine::doctrine.lock_files.directory'));
+
+			$cacheConfig->setCacheFactory($cacheFactory);
 		}
 	}
 
