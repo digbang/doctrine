@@ -24,12 +24,12 @@ class PaginatorFactory
 	 * @param Paginator $paginator
 	 * @return \Illuminate\Pagination\Paginator
 	 */
-	public function fromDoctrinePaginator(Paginator $paginator)
+	public function fromDoctrinePaginator(Paginator $paginator = null)
 	{
 		return $this->laravelPaginationFactory->make(
 			$this->getItems($paginator),
-			$paginator->count(),
-			$paginator->getQuery()->getMaxResults()
+			$this->getCount($paginator),
+			$this->getMaxResults($paginator)
 		);
 	}
 
@@ -39,15 +39,51 @@ class PaginatorFactory
 	 * @param Paginator $paginator
 	 * @return array
 	 */
-	private function getItems(Paginator $paginator)
+	private function getItems(Paginator $paginator = null)
 	{
 		$items = [];
 
-		foreach ($paginator as $item)
+		if ($paginator instanceof Paginator)
 		{
-			$items[] = $item;
+			foreach ($paginator as $item)
+			{
+				$items[] = $item;
+			}
 		}
 
 		return $items;
+	}
+
+	/**
+	 * Get the total amount of items available.
+	 *
+	 * @param Paginator $paginator
+	 * @return int
+	 */
+	private function getCount(Paginator $paginator = null)
+	{
+		if ($paginator === null)
+		{
+			return 0;
+		}
+
+		return $paginator->count();
+	}
+
+	/**
+	 * Get the limit of items configured.
+	 *
+	 * @param Paginator $paginator
+	 * @return int
+	 */
+	private function getMaxResults(Paginator $paginator = null)
+	{
+		if ($paginator === null)
+		{
+			// Avoid division by zero errors
+			return 1;
+		}
+
+		return $paginator->getQuery()->getMaxResults();
 	}
 }
