@@ -24,10 +24,19 @@ class DatabaseConfigurationBridge
 	 * @type Connection
 	 */
 	private $connection;
+	/**
+	 * @type CacheBridge
+	 */
+	private $cache;
 
-	public function __construct(Repository $config)
+	/**
+	 * @param Repository  $config
+	 * @param CacheBridge $cache
+	 */
+	public function __construct(Repository $config, CacheBridge $cache)
 	{
 		$this->config = $config;
+		$this->cache = $cache;
 	}
 
 	public function getConnection()
@@ -59,6 +68,11 @@ class DatabaseConfigurationBridge
 			'password' => array_get($configuration, 'password'),
 			'charset'  => array_get($configuration, 'charset')
 		];
+
+		if ($this->cache->contains('database.version'))
+		{
+			$config['serverVersion'] = $this->cache->fetch('database.version');
+		}
 
 		if ($driver == 'sqlite')
 		{

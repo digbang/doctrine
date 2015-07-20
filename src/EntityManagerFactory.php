@@ -13,6 +13,10 @@ use Digbang\Doctrine\Query\AST\Functions\PlainTsqueryFunction;
 use Digbang\Doctrine\Query\AST\Functions\PlainTsrankFunction;
 use Digbang\Doctrine\Query\AST\Functions\TsqueryFunction;
 use Digbang\Doctrine\Query\AST\Functions\TsrankFunction;
+use Doctrine\Common\EventManager;
+use Doctrine\DBAL\Driver\ServerInfoAwareConnection;
+use Doctrine\DBAL\Event\ConnectionEventArgs;
+use Doctrine\DBAL\Events as DBALEvents;
 use Doctrine\DBAL\Logging\DebugStack;
 use Doctrine\ORM\Cache\CacheConfiguration;
 use Doctrine\ORM\Cache\DefaultCacheFactory;
@@ -82,7 +86,10 @@ class EntityManagerFactory
 	}
 
 	/**
+	 * @param \DebugBar\DebugBar|null $debugBar
+	 *
 	 * @return EntityManager
+	 * @throws \Doctrine\ORM\ORMException
 	 */
 	public function create(\DebugBar\DebugBar $debugBar = null)
 	{
@@ -100,17 +107,12 @@ class EntityManagerFactory
 			$this->addSQLLogger($debugBar, $configuration);
 		}
 
-		$this->eventManagerBridge->addEventListener(Events::onFlush, new SoftDeletableListener());
-
 		$this->fireCreatingEvent($conn, $configuration);
 
 		$entityManager = EntityManager::create($conn, $configuration, $this->eventManagerBridge);
 		$entityManager->getFilters()->enable('trashed');
 
-		$entityManager->getConnection()->getDatabasePlatform()->registerDoctrineTypeMapping(
-			'TSVECTOR',
-			Types\TsvectorType::TSVECTOR
-		);
+		$this->addEventListeners($this->eventManagerBridge);
 
 		$this->fireCreatedEvent($entityManager);
 
@@ -208,6 +210,7 @@ class EntityManagerFactory
 		$configuration->setRepositoryFactory($this->repositoryFactory);
 		$configuration->setNamingStrategy($this->laravelNamingStrategy);
 		$configuration->addFilter('trashed', TrashedFilter::class);
+
 		$configuration->addCustomStringFunction(TsqueryFunction::TSQUERY, TsqueryFunction::class);
 		$configuration->addCustomStringFunction(PlainTsqueryFunction::PLAIN_TSQUERY, PlainTsqueryFunction::class);
 		$configuration->addCustomStringFunction(TsrankFunction::TSRANK, TsrankFunction::class);
@@ -239,5 +242,28 @@ class EntityManagerFactory
 			EntityManagerCreated::class,
 			new EntityManagerCreated($entityManager)
 		);
+	}
+
+	/**
+	 * @param EventManager $eventManager
+	 */
+	private function addEventListeners(EventManager $eventManager)
+	{
+		$eventManager->addEventListener(Events::onFlush, new SoftDeletableListener());
+
+		$eventManager->addEventListener(DBALEvents::postConnect, function (ConnectionEventArgs $args) {
+			$platform = $args->getDatabasePlatform();
+
+			$platform->registerDoctrineTypeMapping(
+				'TSVECTOR',
+				Types\TsvectorType::TSVECTOR
+			);
+
+			$connection = $args->getConnection();
+			if ($connection instanceof ServerInfoAwareConnection)
+			{
+				$this->cacheBridge->save('database.version', $connection->getServerVersion());
+			}
+		});
 	}
 }
