@@ -128,11 +128,11 @@ class Builder
 	public function primary($name = 'id', $type = Type::BIGINT)
 	{
 		return $this->field($type, $name, function (FieldBuilder $fieldBuilder) use ($type) {
-            $fieldBuilder->isPrimaryKey();
+            $fieldBuilder->makePrimaryKey();
 
             if ($this->isInteger($type))
             {
-                $fieldBuilder->generatedValue();
+                $fieldBuilder->generatedValue('SEQUENCE');
             }
         });
 	}
