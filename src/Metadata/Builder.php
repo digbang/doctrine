@@ -132,7 +132,7 @@ class Builder
 
             if ($this->isInteger($type))
             {
-                $fieldBuilder->generatedValue('SEQUENCE');
+                $fieldBuilder->generatedValue('IDENTITY');
             }
         });
 	}
