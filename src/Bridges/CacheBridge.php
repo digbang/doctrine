@@ -63,7 +63,14 @@ class CacheBridge extends CacheProvider
 	 */
 	protected function doSave($id, $data, $lifeTime = 0)
 	{
-		$this->store()->put($id, $data, $lifeTime / 60);
+		if ($lifeTime === 0)
+		{
+			$this->store()->forever($id, $data);
+		}
+		else
+		{
+			$this->store()->put($id, $data, $lifeTime / 60);
+		}
 
 		return true;
 	}
