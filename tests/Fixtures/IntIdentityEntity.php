@@ -2,9 +2,9 @@
 
 use Digbang\Doctrine\Auth\IntIdentityTrait;
 use Digbang\Doctrine\SoftDeletable;
-use Illuminate\Auth\UserInterface;
+use Illuminate\Contracts\Auth\Authenticatable;
 
-class IntIdentityEntity implements UserInterface, SoftDeletable
+class IntIdentityEntity implements Authenticatable, SoftDeletable
 {
 	use IntIdentityTrait;
 

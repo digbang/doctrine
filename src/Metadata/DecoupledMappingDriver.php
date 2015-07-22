@@ -1,25 +1,16 @@
 <?php namespace Digbang\Doctrine\Metadata;
 
-use Doctrine\ORM\EntityManager;
-use Illuminate\Contracts\Config\Repository;
-use Illuminate\Contracts\Container\Container;
-use Doctrine\ORM\Mapping\Builder\ClassMetadataBuilder;
 use Doctrine\Common\Persistence\Mapping\ClassMetadata;
-use Doctrine\Common\Persistence\Mapping\MappingException;
 use Doctrine\Common\Persistence\Mapping\Driver\MappingDriver;
+use Doctrine\Common\Persistence\Mapping\MappingException;
+use Doctrine\Instantiator\InstantiatorInterface;
+use Doctrine\ORM\Mapping\Builder\ClassMetadataBuilder;
+use Doctrine\ORM\Mapping\ClassMetadataInfo;
+use Doctrine\ORM\Mapping\NamingStrategy;
+use Illuminate\Contracts\Config\Repository;
 
 class DecoupledMappingDriver implements MappingDriver
 {
-	/**
-	 * @type Repository
-	 */
-	private $config;
-
-	/**
-	 * @type Container
-	 */
-	private $container;
-
 	/**
 	 * @type array
 	 */
@@ -31,26 +22,42 @@ class DecoupledMappingDriver implements MappingDriver
 	private $embeddables = [];
 
 	/**
-	 * @type EntityManager
-	 */
-	private $entityManager;
-
-	/**
 	 * @type bool
 	 */
 	private $loaded = false;
 
-	function __construct(Repository $config, Container $container)
+	/**
+	 * @type Repository
+	 */
+	private $config;
+
+	/**
+	 * @type NamingStrategy
+	 */
+	private $namingStrategy;
+
+	/**
+	 * @type InstantiatorInterface
+	 */
+	private $instantiator;
+
+	/**
+	 * @param Repository            $config
+	 * @param NamingStrategy        $namingStrategy
+	 * @param InstantiatorInterface $instantiator
+	 */
+	public function __construct(Repository $config, NamingStrategy $namingStrategy, InstantiatorInterface $instantiator)
 	{
-		$this->config = $config;
-		$this->container = $container;
+		$this->config         = $config;
+		$this->namingStrategy = $namingStrategy;
+		$this->instantiator   = $instantiator;
 	}
 
 	/**
 	 * Loads the metadata for the specified class into the provided container.
 	 *
-	 * @param string        $className
-	 * @param ClassMetadata $metadata
+	 * @param string            $className
+	 * @param ClassMetadataInfo $metadata
 	 *
 	 * @throws \Doctrine\Common\Persistence\Mapping\MappingException
 	 */
@@ -58,19 +65,9 @@ class DecoupledMappingDriver implements MappingDriver
 	{
 		$this->loadFromConfig();
 
-		$mappingClass = $this->getMappingFor($className);
+		$metadataClass = $this->getMappingFor($className);
 
-		$metadataClass = $this->container->make($mappingClass);
-
-		if (! $metadataClass instanceof EntityMapping)
-		{
-			throw MappingException::invalidMappingFile($className, get_class($metadataClass));
-		}
-
-		$namingStrategy = $this->getEntityManager()->getConfiguration()->getNamingStrategy();
-		$builder = new Builder(new ClassMetadataBuilder($metadata), $namingStrategy);
-
-		$metadataClass->build($builder);
+		$metadataClass->build($this->createBuilder($metadata));
 	}
 
 	/**
@@ -126,29 +123,41 @@ class DecoupledMappingDriver implements MappingDriver
 		}
 	}
 
+	/**
+	 * Get the mapping class that corresponds to the given entity or embeddable.
+	 *
+	 * @param string $className
+	 * @return EntityMapping
+	 * @throws MappingException
+	 */
 	private function getMappingFor($className)
 	{
-		switch (true)
+		$mappingClass = array_get(array_merge($this->embeddables, $this->entities), $className);
+
+		if (! $mappingClass)
 		{
-			case array_key_exists($className, $this->entities):
-				return $this->entities[$className];
-			case array_key_exists($className, $this->embeddables):
-				return $this->embeddables[$className];
-			default:
-				throw MappingException::nonExistingClass($className);
+			throw new MappingException("Class '$className' does not have a mapping configuration.");
 		}
+
+		$metadataClass = $this->instantiator->instantiate($mappingClass);
+
+		if (! $metadataClass instanceof EntityMapping)
+		{
+			throw MappingException::invalidMappingFile($className, get_class($metadataClass));
+		}
+
+		return $metadataClass;
 	}
 
 	/**
-	 * @return EntityManager
+	 * @param ClassMetadataInfo $metadata
+	 * @return Builder
 	 */
-	private function getEntityManager()
+	private function createBuilder(ClassMetadata $metadata)
 	{
-		if (! $this->entityManager)
-		{
-			$this->entityManager = $this->container->make(EntityManager::class);
-		}
-
-		return $this->entityManager;
+		return new Builder(
+			new ClassMetadataBuilder($metadata),
+			$this->namingStrategy
+		);
 	}
 }

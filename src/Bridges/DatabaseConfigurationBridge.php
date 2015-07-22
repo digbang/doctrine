@@ -9,14 +9,14 @@ class DatabaseConfigurationBridge
 	 * @type array
 	 */
 	private $doctrineDrivers = [
-		'mysql' => 'pdo_mysql',
-		'pgsql' => 'pdo_pgsql',
+		'mysql'  => 'pdo_mysql',
+		'pgsql'  => 'pdo_pgsql',
 		'sqlsrv' => 'pdo_sqlsrv',
 		'sqlite' => 'pdo_sqlite'
 	];
 
 	/**
-	 * @type \Illuminate\Contracts\Config\Repository
+	 * @type Repository
 	 */
 	private $config;
 
@@ -24,6 +24,7 @@ class DatabaseConfigurationBridge
 	 * @type Connection
 	 */
 	private $connection;
+
 	/**
 	 * @type CacheBridge
 	 */
@@ -39,6 +40,11 @@ class DatabaseConfigurationBridge
 		$this->cache = $cache;
 	}
 
+	/**
+	 * Get the doctrine connection array
+	 *
+	 * @return array
+	 */
 	public function getConnection()
 	{
 		if (! $this->connection)
@@ -49,6 +55,11 @@ class DatabaseConfigurationBridge
 		return $this->connection;
 	}
 
+	/**
+	 * Build the doctrine connection array based on the laravel configuration.
+	 *
+	 * @return array
+	 */
 	public function newConnection()
 	{
 		$defaultConnection = $this->config->get('database.default');
@@ -86,4 +97,3 @@ class DatabaseConfigurationBridge
 		return $config;
 	}
 }
- 

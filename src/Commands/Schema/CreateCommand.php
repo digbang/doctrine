@@ -1,7 +1,7 @@
 <?php namespace Digbang\Doctrine\Commands\Schema;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Illuminate\Cache\Repository;
+use Illuminate\Contracts\Config\Repository;
 use Symfony\Component\Console\Input\InputOption;
 use Doctrine\ORM\Tools\SchemaTool;
 

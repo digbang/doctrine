@@ -1,9 +1,8 @@
 <?php namespace Tests\Cache;
 
 use Digbang\Doctrine\Bridges\CacheBridge;
-use Illuminate\Contracts\Cache\Repository;
-use Illuminate\Contracts\Cache\StoreInterface;
-use PHPUnit_Framework_MockObject_MockObject;
+use Illuminate\Contracts\Cache\Factory;
+use Illuminate\Cache\Repository;
 use PHPUnit_Framework_TestCase;
 
 class CacheBridgeTest extends PHPUnit_Framework_TestCase
@@ -18,32 +17,38 @@ class CacheBridgeTest extends PHPUnit_Framework_TestCase
 	private $cb;
 
 	/**
-	 * @type PHPUnit_Framework_MockObject_MockObject
+	 * @type Factory
 	 */
-	private $laravelCache;
+	private $cacheFactory;
 
 	/**
-	 * @type PHPUnit_Framework_MockObject_MockObject
+	 * @type Repository
 	 */
 	private $store;
 
 	protected function setUp()
 	{
-		$this->laravelCache = $this
-			->getMockBuilder(Repository::class)
+		$this->cacheFactory = $this
+			->getMockBuilder(Factory::class)
 			->disableOriginalConstructor()
 			->getMock();
 
 		$this->store = $this
 			->getMockBuilder(Repository::class)
+			->setMethods(['get', 'has', 'put', 'forget', 'flush'])
 			->disableOriginalConstructor()
 			->getMock();
 
-		$this->cb = new CacheBridge($this->laravelCache);
+		$this->cb = new CacheBridge($this->cacheFactory);
 
 		$version = rand(0, 10);
 
-		$this->laravelCache
+		$this->cacheFactory
+			->expects($this->any())
+			->method('store')
+			->willReturn($this->store);
+
+		$this->store
 			->expects($this->any())
 			->method('get')
 			->will(
@@ -54,7 +59,7 @@ class CacheBridgeTest extends PHPUnit_Framework_TestCase
 				])
 			);
 
-		$this->laravelCache
+		$this->store
 			->expects($this->any())
 			->method('has')
 			->will($this->returnValueMap([
@@ -80,7 +85,7 @@ class CacheBridgeTest extends PHPUnit_Framework_TestCase
 	/** @test */
 	public function it_should_call_on_laravels_cache_on_save()
 	{
-		$this->laravelCache
+		$this->store
 			->expects($this->atLeastOnce())
 			->method('put');
 
@@ -90,11 +95,6 @@ class CacheBridgeTest extends PHPUnit_Framework_TestCase
 	/** @test */
 	public function it_should_call_on_laravels_cache_on_delete()
 	{
-		$this->laravelCache
-			->expects($this->atLeastOnce())
-			->method('getStore')
-			->willReturn($this->store);
-
 		$this->store
 			->expects($this->once())
 			->method('forget');
@@ -105,11 +105,6 @@ class CacheBridgeTest extends PHPUnit_Framework_TestCase
 	/** @test */
 	public function it_should_call_on_laravels_cache_on_flush_all()
 	{
-		$this->laravelCache
-			->expects($this->atLeastOnce())
-			->method('getStore')
-			->willReturn($this->store);
-
 		$this->store
 			->expects($this->once())
 			->method('flush');

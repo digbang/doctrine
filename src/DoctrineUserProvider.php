@@ -2,46 +2,48 @@
 
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityRepository;
-use Illuminate\Auth\UserInterface;
-use Illuminate\Auth\UserProviderInterface;
-use Illuminate\Hashing\HasherInterface;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Contracts\Auth\UserProvider;
+use Illuminate\Contracts\Hashing\Hasher;
 
-class DoctrineUserProvider implements UserProviderInterface
+class DoctrineUserProvider implements UserProvider
 {
     /**
-     * @var HasherInterface
+     * @var Hasher
      */
     private $hasher;
+
     /**
      * @var EntityManager
      */
     private $entityManager;
+
     /**
      * @var string
      */
     private $entity;
 
 	/**
-	 * @type UserInterface
+	 * @type Authenticatable
 	 */
 	private $instance;
 
     /**
-     * @param HasherInterface $hasher
+     * @param Hasher $hasher
      * @param EntityManager $entityManager
      * @param $entity
      */
-    public function __construct(HasherInterface $hasher, EntityManager $entityManager, $entity)
+    public function __construct(Hasher $hasher, EntityManager $entityManager, $entity)
     {
-        $this->hasher = $hasher;
+        $this->hasher        = $hasher;
         $this->entityManager = $entityManager;
-        $this->entity = $entity;
+        $this->entity        = $entity;
     }
     /**
      * Retrieve a user by their unique identifier.
 
      * @param  mixed $identifier
-     * @return UserInterface|null
+     * @return Authenticatable|null
      */
     public function retrieveById($identifier)
     {
@@ -53,7 +55,7 @@ class DoctrineUserProvider implements UserProviderInterface
 
      * @param  mixed $identifier
      * @param  string $token
-     * @return UserInterface|null
+     * @return Authenticatable|null
      */
     public function retrieveByToken($identifier, $token)
     {
@@ -65,11 +67,11 @@ class DoctrineUserProvider implements UserProviderInterface
     /**
      * Update the "remember me" token for the given user in storage.
 
-     * @param  UserInterface $user
+     * @param  Authenticatable $user
      * @param  string $token
      * @return void
      */
-    public function updateRememberToken(UserInterface $user, $token)
+    public function updateRememberToken(Authenticatable $user, $token)
     {
         $user->setRememberToken($token);
         $this->entityManager->persist($user);
@@ -80,14 +82,18 @@ class DoctrineUserProvider implements UserProviderInterface
      * Retrieve a user by the given credentials.
 
      * @param  array $credentials
-     * @return UserInterface|null
+     * @return Authenticatable|null
      */
     public function retrieveByCredentials(array $credentials)
     {
         $criteria = [];
         foreach ($credentials as $key => $value)
+        {
             if ( ! str_contains($key, 'password'))
+            {
                 $criteria[$key] = $value;
+            }
+        }
 
         return $this->getRepository()->findOneBy($criteria);
     }
@@ -95,11 +101,11 @@ class DoctrineUserProvider implements UserProviderInterface
     /**
      * Validate a user against the given credentials.
 
-     * @param  UserInterface $user
+     * @param  Authenticatable $user
      * @param  array $credentials
      * @return bool
      */
-    public function validateCredentials(UserInterface $user, array $credentials)
+    public function validateCredentials(Authenticatable $user, array $credentials)
     {
         return $this->hasher->check($credentials['password'], $user->getAuthPassword());
     }
@@ -117,7 +123,7 @@ class DoctrineUserProvider implements UserProviderInterface
     /**
      * Returns instantiated entity.
      *
-     * @return UserInterface
+     * @return Authenticatable
      */
     private function getEntity()
     {

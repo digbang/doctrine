@@ -2,9 +2,9 @@
 
 use Digbang\Doctrine\Auth\EmailIdentityTrait;
 use Digbang\Doctrine\SoftDeletable;
-use Illuminate\Auth\UserInterface;
+use Illuminate\Contracts\Auth\Authenticatable;
 
-class EmailIdentityEntity implements UserInterface, SoftDeletable
+class EmailIdentityEntity implements Authenticatable, SoftDeletable
 {
 	use EmailIdentityTrait;
 

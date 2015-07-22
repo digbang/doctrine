@@ -4,7 +4,7 @@ use Digbang\Doctrine\DoctrineUserProvider;
 use Doctrine\Common\Persistence\ObjectRepository;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadata;
-use Illuminate\Hashing\HasherInterface;
+use Illuminate\Contracts\Hashing\Hasher;
 use PHPUnit_Framework_MockObject_MockObject as Mock;
 
 class DoctrineUserProviderTest extends TestCase
@@ -31,7 +31,7 @@ class DoctrineUserProviderTest extends TestCase
 
 	public function setUp()
 	{
-		$this->hasherMock        = $this->getEmptyMock(HasherInterface::class);
+		$this->hasherMock        = $this->getEmptyMock(Hasher::class);
 		$this->entityManagerMock = $this->getEmptyMock(EntityManager::class);
 		$this->repositoryMock    = $this->getEmptyMock(ObjectRepository::class);
 		$this->classMetadataMock = $this->getEmptyMock(ClassMetadata::class);

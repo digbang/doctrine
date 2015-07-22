@@ -1,35 +1,26 @@
 <?php namespace Digbang\Doctrine\Tools;
 
 use Doctrine\ORM\Tools\Pagination\Paginator;
-use Illuminate\Pagination\Factory;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class PaginatorFactory
 {
 	/**
-	 * @type Factory
-	 */
-	private $laravelPaginationFactory;
-
-	/**
-	 * @param Factory $laravelPaginationFactory
-	 */
-	public function __construct(Factory $laravelPaginationFactory)
-	{
-		$this->laravelPaginationFactory = $laravelPaginationFactory;
-	}
-
-	/**
 	 * Construct a Laravel Paginator object from a Doctrine Paginator instance.
 	 *
 	 * @param Paginator $paginator
-	 * @return \Illuminate\Pagination\Paginator
+	 * @param array     $options
+	 *
+	 * @return LengthAwarePaginator
 	 */
-	public function fromDoctrinePaginator(Paginator $paginator = null)
+	public function fromDoctrinePaginator(Paginator $paginator = null, array $options = [])
 	{
-		return $this->laravelPaginationFactory->make(
+		return new LengthAwarePaginator(
 			$this->getItems($paginator),
 			$this->getCount($paginator),
-			$this->getMaxResults($paginator)
+			$this->getMaxResults($paginator),
+			$this->getCurrentPage($paginator),
+			$options
 		);
 	}
 
@@ -85,5 +76,31 @@ class PaginatorFactory
 		}
 
 		return $paginator->getQuery()->getMaxResults();
+	}
+
+	/**
+	 * Calculates the current page from the paginator query.
+	 *
+	 * @param Paginator|null $paginator
+	 * @return int
+	 */
+	private function getCurrentPage(Paginator $paginator = null)
+	{
+		if ($paginator === null)
+		{
+			return 1;
+		}
+
+		$query = $paginator->getQuery();
+
+		$limit = $query->getMaxResults();
+		$offset = $query->getFirstResult();
+
+		if ($limit < 1)
+		{
+			return 1;
+		}
+
+		return 1 + ($offset / $limit);
 	}
 }

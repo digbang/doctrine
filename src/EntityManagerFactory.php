@@ -26,7 +26,7 @@ use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Events;
 use Doctrine\ORM\Tools\Setup;
-use Illuminate\Config\Repository;
+use Illuminate\Contracts\Config\Repository;
 
 class EntityManagerFactory
 {

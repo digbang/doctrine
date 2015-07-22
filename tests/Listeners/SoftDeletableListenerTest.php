@@ -4,14 +4,14 @@ use Digbang\Doctrine\Listeners\SoftDeletableListener;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\UnitOfWork;
+use PHPUnit_Framework_MockObject_MockObject as Mock;
 use Tests\Fixtures\IntIdentityEntity;
 use Tests\TestCase;
-use PHPUnit_Framework_MockObject_MockObject as Mock;
 
 class SoftDeletableListenerTest extends TestCase
 {
 	/**
-	 * @type Mock
+	 * @type Mock|EntityManagerInterface
 	 */
 	private $em;
 
@@ -22,17 +22,6 @@ class SoftDeletableListenerTest extends TestCase
 	    $listener = $this->setUpFor($softDeletable);
 
 	    $this->em->expects($this->once())->method('persist')->with($softDeletable);
-
-	    $this->flushEvent($listener);
-    }
-
-    /** @test */
-	function it_should_not_detect_mitchells_trait()
-    {
-	    $softDeletable = new FakeEntityThatImplementsMitchellsStuff();
-	    $listener = $this->setUpFor($softDeletable);
-
-	    $this->em->expects($this->never())->method('persist')->with($softDeletable);
 
 	    $this->flushEvent($listener);
     }
@@ -62,9 +51,4 @@ class SoftDeletableListenerTest extends TestCase
 
 		$listener->onFlush($event);
 	}
-}
-
-class FakeEntityThatImplementsMitchellsStuff
-{
-    use \Mitch\LaravelDoctrine\Traits\SoftDeletes;
 }

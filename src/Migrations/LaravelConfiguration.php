@@ -1,7 +1,7 @@
 <?php namespace Digbang\Doctrine\Migrations;
 
 use Doctrine\DBAL\Migrations\Configuration\Configuration;
-use Illuminate\Config\Repository;
+use Illuminate\Contracts\Config\Repository;
 
 class LaravelConfiguration extends Configuration
 {

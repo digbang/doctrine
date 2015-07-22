@@ -1,6 +1,5 @@
 <?php namespace Digbang\Doctrine\Metadata;
 
-use Closure;
 use Digbang\Doctrine\Types\CarbonType;
 use Digbang\Doctrine\Types\TsvectorType;
 use Doctrine\DBAL\Types\Type;
@@ -8,7 +7,6 @@ use Doctrine\ORM\Events;
 use Doctrine\ORM\Mapping\Builder\ClassMetadataBuilder;
 use Doctrine\ORM\Mapping\Builder\FieldBuilder;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
-use Doctrine\ORM\Mapping\MappingException;
 use Doctrine\ORM\Mapping\NamingStrategy;
 
 /**
@@ -143,7 +141,7 @@ class Builder
 	 *
 	 * @return $this
 	 */
-	public function bigint($name, Closure $callback = null)
+	public function bigint($name, callable $callback = null)
 	{
 		return $this->field(Type::BIGINT, $name, $callback);
 	}
@@ -154,7 +152,7 @@ class Builder
 	 *
 	 * @return $this
 	 */
-	public function boolean($name, Closure $callback = null)
+	public function boolean($name, callable $callback = null)
 	{
 		return $this->field(Type::BOOLEAN, $name, $callback);
 	}
@@ -165,7 +163,7 @@ class Builder
 	 *
 	 * @return $this
 	 */
-	public function datetime($name, Closure $callback = null)
+	public function datetime($name, callable $callback = null)
 	{
 		return $this->field(CarbonType::DATETIME, $name, $callback);
 	}
@@ -176,7 +174,7 @@ class Builder
 	 *
 	 * @return $this
 	 */
-	public function datetimetz($name, Closure $callback = null)
+	public function datetimetz($name, callable $callback = null)
 	{
 		return $this->field(CarbonType::DATETIMETZ, $name, $callback);
 	}
@@ -187,7 +185,7 @@ class Builder
 	 *
 	 * @return $this
 	 */
-	public function date($name, Closure $callback = null)
+	public function date($name, callable $callback = null)
 	{
 		return $this->field(CarbonType::DATE, $name, $callback);
 	}
@@ -198,7 +196,7 @@ class Builder
 	 *
 	 * @return $this
 	 */
-	public function time($name, Closure $callback = null)
+	public function time($name, callable $callback = null)
 	{
 		return $this->field(CarbonType::TIME, $name, $callback);
 	}
@@ -209,7 +207,7 @@ class Builder
 	 *
 	 * @return $this
 	 */
-	public function decimal($name, Closure $callback = null)
+	public function decimal($name, callable $callback = null)
 	{
 		return $this->field(Type::DECIMAL, $name, $callback);
 	}
@@ -220,7 +218,7 @@ class Builder
 	 *
 	 * @return $this
 	 */
-	public function integer($name, Closure $callback = null)
+	public function integer($name, callable $callback = null)
 	{
 		return $this->field(Type::INTEGER, $name, $callback);
 	}
@@ -231,7 +229,7 @@ class Builder
 	 *
 	 * @return $this
 	 */
-	public function object($name, Closure $callback = null)
+	public function object($name, callable $callback = null)
 	{
 		return $this->field(Type::OBJECT, $name, $callback);
 	}
@@ -242,7 +240,7 @@ class Builder
 	 *
 	 * @return $this
 	 */
-	public function smallint($name, Closure $callback = null)
+	public function smallint($name, callable $callback = null)
 	{
 		return $this->field(Type::SMALLINT, $name, $callback);
 	}
@@ -253,7 +251,7 @@ class Builder
 	 *
 	 * @return $this
 	 */
-	public function string($name, Closure $callback = null)
+	public function string($name, callable $callback = null)
 	{
 		return $this->field(Type::STRING, $name, $callback);
 	}
@@ -264,7 +262,7 @@ class Builder
 	 *
 	 * @return $this
 	 */
-	public function text($name, Closure $callback = null)
+	public function text($name, callable $callback = null)
 	{
 		return $this->field(Type::TEXT, $name, $callback);
 	}
@@ -275,7 +273,7 @@ class Builder
 	 *
 	 * @return $this
 	 */
-	public function binary($name, Closure $callback = null)
+	public function binary($name, callable $callback = null)
 	{
 		return $this->field(Type::BINARY, $name, $callback);
 	}
@@ -286,7 +284,7 @@ class Builder
 	 *
 	 * @return $this
 	 */
-	public function blob($name, Closure $callback = null)
+	public function blob($name, callable $callback = null)
 	{
 		return $this->field(Type::BLOB, $name, $callback);
 	}
@@ -297,7 +295,7 @@ class Builder
 	 *
 	 * @return $this
 	 */
-	public function float($name, Closure $callback = null)
+	public function float($name, callable $callback = null)
 	{
 		return $this->field(Type::FLOAT, $name, $callback);
 	}
@@ -308,7 +306,7 @@ class Builder
 	 *
 	 * @return $this
 	 */
-	public function guid($name, Closure $callback = null)
+	public function guid($name, callable $callback = null)
 	{
 		return $this->field(Type::GUID, $name, $callback);
 	}
@@ -319,7 +317,7 @@ class Builder
 	 *
 	 * @return $this
 	 */
-	public function tsvector($name, Closure $callback = null)
+	public function tsvector($name, callable $callback = null)
 	{
 		return $this->field(TsvectorType::TSVECTOR, $name, $callback);
 	}
@@ -421,15 +419,13 @@ class Builder
 
         if ($idField != 'email')
         {
-            $this->string('email', function(FieldBuilder $fieldBuilder){
-                $fieldBuilder->unique();
-            });
+            $this->uniqueString('email');
         }
 
         $this->password();
         $this->rememberToken();
         $this->timestamps();
-        $this->softDeletes();
+        $this->deletedAt();
 
         return $this;
     }
@@ -441,7 +437,7 @@ class Builder
 	 *
 	 * @return $this
 	 */
-	public function field($type, $name, Closure $callback = null)
+	public function field($type, $name, callable $callback = null)
 	{
 		$fieldBuilder = $this->metadataBuilder->createField($name, $type);
 
@@ -462,10 +458,7 @@ class Builder
 	 */
 	public function embeddable()
 	{
-		$classMetadata = $this->metadataBuilder->getClassMetadata();
-
-		$classMetadata->isEmbeddedClass = true;
-		$classMetadata->isMappedSuperclass = false;
+		$this->metadataBuilder->setEmbeddable();
 
 		return $this;
 	}
@@ -521,13 +514,7 @@ class Builder
      */
     public function embedded($class, $name, $columnPrefix = false)
     {
-        $classMetadata = $this->metadataBuilder->getClassMetadata();
-
-        $classMetadata->mapEmbedded([
-            'fieldName'    => $name,
-            'class'        => $class,
-            'columnPrefix' => $columnPrefix
-        ]);
+        $this->metadataBuilder->addEmbedded($name, $class, $columnPrefix);
 
         return $this;
     }
@@ -545,7 +532,7 @@ class Builder
 	 *
 	 * @return $this
 	 */
-	public function belongsTo($entity, $field, Closure $callback = null)
+	public function belongsTo($entity, $field, callable $callback = null)
 	{
 		return $this->addRelation(
 			new Relations\BelongsTo($this->metadataBuilder, $this->namingStrategy, $entity, $field),
@@ -566,7 +553,7 @@ class Builder
 	 *
 	 * @return $this
 	 */
-	public function mayBelongTo($entity, $field, Closure $callback = null)
+	public function mayBelongTo($entity, $field, callable $callback = null)
 	{
 		return $this->addRelation(
 			new Relations\BelongsTo($this->metadataBuilder, $this->namingStrategy, $entity, $field),
@@ -587,7 +574,7 @@ class Builder
 	 *
 	 * @return $this
 	 */
-	public function belongsToMany($entity, $field, Closure $callback = null)
+	public function belongsToMany($entity, $field, callable $callback = null)
 	{
 		return $this->addRelation(
 			new Relations\BelongsToMany($this->metadataBuilder, $entity, $field),
@@ -608,7 +595,7 @@ class Builder
 	 *
 	 * @return $this
 	 */
-	public function hasMany($entity, $field, Closure $callback = null)
+	public function hasMany($entity, $field, callable $callback = null)
 	{
 		return $this->addRelation(
 			new Relations\HasMany($this->metadataBuilder, $entity, $field),
@@ -629,7 +616,7 @@ class Builder
 	 *
 	 * @return $this
 	 */
-	public function hasOne($entity, $field, Closure $callback = null)
+	public function hasOne($entity, $field, callable $callback = null)
 	{
 		return $this->addRelation(
 			new Relations\HasOne($this->metadataBuilder, $entity, $field),
@@ -647,7 +634,7 @@ class Builder
 	 *
 	 * @return $this
 	 */
-	public function addRelation(Relations\Relation $relation, Closure $callback = null)
+	public function addRelation(Relations\Relation $relation, callable $callback = null)
 	{
 		if ($callback)
 		{
@@ -793,9 +780,9 @@ class Builder
 
 	/**
 	 * @param callable|null $callback
-	 * @return Closure
+	 * @return callable
 	 */
-	private function nullableFieldCallback(Closure $callback = null)
+	private function nullableFieldCallback(callable $callback = null)
 	{
 		return function (FieldBuilder $fieldBuilder) use ($callback){
 			$fieldBuilder->nullable();
@@ -809,9 +796,9 @@ class Builder
 
 	/**
 	 * @param callable|null $callback
-	 * @return Closure
+	 * @return callable
 	 */
-	private function uniqueFieldCallback(Closure $callback = null)
+	private function uniqueFieldCallback(callable $callback = null)
 	{
 		return function (FieldBuilder $fieldBuilder) use ($callback){
 			$fieldBuilder->unique();
@@ -829,7 +816,7 @@ class Builder
 	 *
 	 * @return callable
 	 */
-	private function makeMayBelongToCallback($field, Closure $callback = null)
+	private function makeMayBelongToCallback($field, callable $callback = null)
 	{
 		return function (Relations\BelongsTo $belongsTo) use ($field, $callback) {
 			$belongsTo->keys(

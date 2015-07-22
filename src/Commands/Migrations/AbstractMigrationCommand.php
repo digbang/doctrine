@@ -2,14 +2,14 @@
 
 use Digbang\Doctrine\Migrations\LaravelConfiguration;
 use Doctrine\DBAL\Migrations\Configuration\AbstractFileConfiguration;
-use Doctrine\ORM\EntityManagerInterface;
-use Illuminate\Config\Repository;
-use Illuminate\Console\Command;
-use Symfony\Component\Console\Input\InputOption;
-use Doctrine\DBAL\Migrations\OutputWriter;
 use Doctrine\DBAL\Migrations\Configuration\Configuration;
 use Doctrine\DBAL\Migrations\Configuration\YamlConfiguration;
 use Doctrine\DBAL\Migrations\Configuration\XmlConfiguration;
+use Doctrine\DBAL\Migrations\OutputWriter;
+use Doctrine\ORM\EntityManagerInterface;
+use Illuminate\Console\Command;
+use Illuminate\Contracts\Config\Repository;
+use Symfony\Component\Console\Input\InputOption;
 
 /**
  * CLI Command for adding and deleting migration versions from the version table.

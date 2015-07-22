@@ -3,15 +3,17 @@
 	"description": "Tools and configurations to use Doctrine ORM inside Laravel in Digbang.",
     "license": "proprietary",
     "require": {
-        "doctrine/orm":                  "~2.5",
-        "illuminate/support":            "~5.1",
-        "illuminate/contracts":          "~5.1",
-        "mitchellvanw/laravel-doctrine": "dev-develop"
+        "doctrine/orm":         "~2.5",
+        "illuminate/support":   "~5.1",
+        "illuminate/contracts": "~5.1"
     },
     "require-dev": {
-        "phpunit/phpunit":    "~4.0",
-        "maximebf/debugbar":  "~1.10",
-        "illuminate/console": "~5.1"
+        "illuminate/cache":  "~5.1",
+        "maximebf/debugbar": "~1.10",
+        "phpunit/phpunit":   "~4.0"
+    },
+    "suggest": {
+        "doctrine/migrations": "Use doctrine migrations to generate SQL migration files instead of using the schema tool."
     },
     "autoload": {
         "psr-4": {
@@ -22,7 +24,5 @@
         "psr-4": {
             "Tests\\": "tests/"
         }
-    },
-    "minimum-stability": "dev",
-	"prefer-stable": true
+    }
 }

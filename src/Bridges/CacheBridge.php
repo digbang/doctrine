@@ -1,18 +1,25 @@
 <?php namespace Digbang\Doctrine\Bridges;
 
-use Illuminate\Contracts\Cache\Repository;
+use Illuminate\Contracts\Cache\Factory;
 use Doctrine\Common\Cache\CacheProvider;
+use Illuminate\Contracts\Cache\Repository;
+use Illuminate\Contracts\Cache\Store;
 
 class CacheBridge extends CacheProvider
 {
 	/**
-	 * @type Repository
+	 * @type Repository|Store
 	 */
-	private $laravelCache;
+	private $store;
 
-	function __construct(Repository $laravelCache)
+	/**
+	 * @type Factory
+	 */
+	private $cacheFactory;
+
+	public function __construct(Factory $cacheFactory)
 	{
-		$this->laravelCache = $laravelCache;
+		$this->cacheFactory = $cacheFactory;
 	}
 
 	/**
@@ -24,7 +31,7 @@ class CacheBridge extends CacheProvider
 	 */
 	protected function doFetch($id)
 	{
-		if (($data = $this->laravelCache->get($id)) !== null)
+		if (($data = $this->store()->get($id)) !== null)
 		{
 			return $data;
 		}
@@ -41,7 +48,7 @@ class CacheBridge extends CacheProvider
 	 */
 	protected function doContains($id)
 	{
-		return $this->laravelCache->has($id);
+		return $this->store()->has($id);
 	}
 
 	/**
@@ -56,7 +63,7 @@ class CacheBridge extends CacheProvider
 	 */
 	protected function doSave($id, $data, $lifeTime = 0)
 	{
-		$this->laravelCache->put($id, $data, $lifeTime / 60);
+		$this->store()->put($id, $data, $lifeTime / 60);
 
 		return true;
 	}
@@ -70,7 +77,7 @@ class CacheBridge extends CacheProvider
 	 */
 	protected function doDelete($id)
 	{
-		$this->laravelCache->forget($id);
+		$this->store()->forget($id);
 
 		return true;
 	}
@@ -111,9 +118,22 @@ class CacheBridge extends CacheProvider
 	 */
 	protected function doFlush()
 	{
-		$this->laravelCache->getStore()->flush();
+		$this->store()->flush();
 
 		return true;
+	}
+
+	/**
+	 * @return Repository|Store
+	 */
+	private function store()
+	{
+		if (! $this->store)
+		{
+			$this->store = $this->cacheFactory->store();
+		}
+
+		return $this->store;
 	}
 }
  

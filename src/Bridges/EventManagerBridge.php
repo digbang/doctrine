@@ -4,7 +4,7 @@ use Doctrine\Common\EventArgs;
 use Doctrine\Common\EventManager;
 use Doctrine\Common\EventSubscriber;
 use Doctrine\ORM\Events;
-use Illuminate\Events\Dispatcher;
+use Illuminate\Contracts\Events\Dispatcher;
 
 class EventManagerBridge extends EventManager
 {

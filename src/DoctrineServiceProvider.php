@@ -2,13 +2,14 @@
 
 use Digbang\Doctrine\Types;
 use Doctrine\DBAL\Types\Type;
+use Doctrine\Instantiator\Instantiator;
+use Doctrine\Instantiator\InstantiatorInterface;
 use Doctrine\ORM\EntityManager;
-use Illuminate\Container\Container;
-use Illuminate\Hashing\HasherInterface;
+use Illuminate\Contracts\Container\Container;
+use Illuminate\Contracts\Hashing\Hasher;
 use Illuminate\Support\ServiceProvider;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadataFactory;
-use Mitch\LaravelDoctrine\Console;
 
 class DoctrineServiceProvider extends ServiceProvider
 {
@@ -31,6 +32,9 @@ class DoctrineServiceProvider extends ServiceProvider
 
 	private function registerEntityManager()
 	{
+		// Bind the instantiator interface so that the container can build our driver
+		$this->app->bind(InstantiatorInterface::class, Instantiator::class);
+
 		// bind the EM interface to our only EM as a singleton
 		$this->app->singleton(EntityManagerInterface::class, EntityManager::class);
 
@@ -56,16 +60,17 @@ class DoctrineServiceProvider extends ServiceProvider
 	public function boot()
 	{
 		$configPath = $this->app->make('path.config');
+
 		$this->publishes([
-			__DIR__ . '/config/cache.php' => $configPath . '/doctrine-cache.php',
-			__DIR__ . '/config/doctrine.php' => $configPath . '/doctrine.php',
-			__DIR__ . '/config/mappings.php' => $configPath . '/doctrine-mappings.php',
+			__DIR__ . '/config/cache.php'        => $configPath . '/doctrine-cache.php',
+			__DIR__ . '/config/doctrine.php'     => $configPath . '/doctrine.php',
+			__DIR__ . '/config/mappings.php'     => $configPath . '/doctrine-mappings.php',
 			__DIR__ . '/config/repositories.php' => $configPath . '/doctrine-repositories.php',
 		], 'config');
 
         $this->registerAuthDriver();
 
-		$this->commands([
+		$commands = [
             // doctrine:exec
             Commands\Exec\RunSqlCommand::class,
             Commands\Exec\RunDqlCommand::class,
@@ -94,22 +99,28 @@ class DoctrineServiceProvider extends ServiceProvider
             Commands\Mappings\InfoCommand::class,
             Commands\Mappings\DescribeCommand::class,
             Commands\Mappings\ConvertCommand::class,
+		];
 
-            // doctrine:migrations
-            Commands\Migrations\DiffCommand::class,
-            Commands\Migrations\ExecuteCommand::class,
-            Commands\Migrations\GenerateCommand::class,
-            Commands\Migrations\MigrateCommand::class,
-            Commands\Migrations\StatusCommand::class,
-            Commands\Migrations\VersionCommand::class
-		]);
+		if (class_exists('Doctrine\DBAL\Migrations\Configuration\Configuration'))
+		{
+			$commands = array_merge($commands, [
+				// doctrine:migrations
+	            Commands\Migrations\DiffCommand::class,
+	            Commands\Migrations\ExecuteCommand::class,
+	            Commands\Migrations\GenerateCommand::class,
+	            Commands\Migrations\MigrateCommand::class,
+	            Commands\Migrations\StatusCommand::class,
+	            Commands\Migrations\VersionCommand::class
+			]);
+		}
+		$this->commands($commands);
 	}
 
     private function registerAuthDriver()
     {
         $this->app['auth']->extend('doctrine', function ($app) {
             return new DoctrineUserProvider(
-                $app[HasherInterface::class],
+                $app[Hasher::class],
                 $app[EntityManager::class],
                 $app['config']['auth.model']
             );

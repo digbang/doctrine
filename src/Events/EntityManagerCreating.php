@@ -2,27 +2,30 @@
 
 use Doctrine\Common\EventArgs;
 use Doctrine\Common\EventManager;
+use Doctrine\DBAL\Connection;
 use Doctrine\ORM\Configuration;
 
 class EntityManagerCreating extends EventArgs
 {
 	/**
-	 * @type array|\Doctrine\DBAL\Connection
+	 * @type array|Connection
 	 */
 	private $conn;
+
 	/**
 	 * @type Configuration
 	 */
 	private $config;
+
 	/**
 	 * @type EventManager
 	 */
 	private $eventManager;
 
 	/**
-	 * @param array|\Doctrine\DBAL\Connection $conn
-	 * @param Configuration                   $config
-	 * @param EventManager                    $eventManager
+	 * @param array|Connection $conn
+	 * @param Configuration    $config
+	 * @param EventManager     $eventManager
 	 */
 	public function __construct($conn, Configuration $config, EventManager $eventManager)
 	{
@@ -32,7 +35,7 @@ class EntityManagerCreating extends EventArgs
 	}
 
 	/**
-	 * @return array|\Doctrine\DBAL\Connection
+	 * @return array|Connection
 	 */
 	public function getConnection()
 	{
