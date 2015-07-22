@@ -80,7 +80,11 @@ class DatabaseConfigurationBridge
 			'charset'  => array_get($configuration, 'charset')
 		];
 
-		if ($this->cache->contains('database.version'))
+		if (($serverVersion = array_get($configuration, 'server_version')) !== null)
+		{
+			$config['serverVersion'] = $serverVersion;
+		}
+		elseif ($this->cache->contains('database.version'))
 		{
 			$config['serverVersion'] = $this->cache->fetch('database.version');
 		}
