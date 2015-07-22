@@ -56,7 +56,14 @@ class CacheBridge extends CacheProvider
 	 */
 	protected function doSave($id, $data, $lifeTime = 0)
 	{
-		$this->laravelCache->put($id, $data, $lifeTime / 60);
+		if ($lifeTime === 0)
+		{
+			$this->laravelCache->forever($id, $data);
+		}
+		else
+		{
+			$this->laravelCache->put($id, $data, $lifeTime / 60);
+		}
 
 		return true;
 	}
