@@ -22,7 +22,10 @@ abstract class AbstractSchemaCommand extends Command
         /* @var $em \Doctrine\ORM\EntityManager */
         $em = $this->em;
 
-        $metadatas = $em->getMetadataFactory()->getAllMetadata();
+        $metadataFactory = $em->getMetadataFactory();
+        $metadataFactory->setCacheDriver(null);
+
+        $metadatas = $metadataFactory->getAllMetadata();
 
         if ( ! empty($metadatas)) {
             // Create SchemaTool
