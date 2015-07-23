@@ -120,17 +120,18 @@ class Builder
 	/**
 	 * @param string $name
 	 * @param string $type
+	 * @param string $strategy
 	 *
 	 * @return $this
 	 */
-	public function primary($name = 'id', $type = Type::BIGINT)
+	public function primary($name = 'id', $type = Type::BIGINT, $strategy = 'AUTO')
 	{
-		return $this->field($type, $name, function (FieldBuilder $fieldBuilder) use ($type) {
+		return $this->field($type, $name, function (FieldBuilder $fieldBuilder) use ($type, $strategy) {
             $fieldBuilder->makePrimaryKey();
 
             if ($this->isInteger($type))
             {
-                $fieldBuilder->generatedValue('IDENTITY');
+                $fieldBuilder->generatedValue($strategy);
             }
         });
 	}
