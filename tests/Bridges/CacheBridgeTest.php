@@ -35,7 +35,7 @@ class CacheBridgeTest extends PHPUnit_Framework_TestCase
 
 		$this->store = $this
 			->getMockBuilder(Repository::class)
-			->setMethods(['get', 'has', 'put', 'forget', 'flush'])
+			->setMethods(['get', 'has', 'put', 'forget', 'flush', 'forever'])
 			->disableOriginalConstructor()
 			->getMock();
 
@@ -83,13 +83,23 @@ class CacheBridgeTest extends PHPUnit_Framework_TestCase
 	}
 
 	/** @test */
-	public function it_should_call_on_laravels_cache_on_save()
+	public function it_should_call_on_laravels_cache_on_save_with_zero_lifetime()
+	{
+		$this->store
+			->expects($this->atLeastOnce())
+			->method('forever');
+
+		$this->assertTrue($this->cb->save('some', 'Value'), "Save not working?");
+	}
+
+	/** @test */
+	public function it_should_call_on_laravels_cache_on_save_with_positive_lifetime()
 	{
 		$this->store
 			->expects($this->atLeastOnce())
 			->method('put');
 
-		$this->assertTrue($this->cb->save('some', 'Value'), "Save not working?");
+		$this->assertTrue($this->cb->save('some', 'Value', 20), "Save not working?");
 	}
 
 	/** @test */
