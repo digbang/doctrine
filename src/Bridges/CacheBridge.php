@@ -58,7 +58,7 @@ class CacheBridge extends CacheProvider
 	{
 		if ($lifeTime === 0)
 		{
-			$this->laravelCache->forever($id, $data);
+			$this->laravelCache->getStore()->forever($id, $data);
 		}
 		else
 		{
