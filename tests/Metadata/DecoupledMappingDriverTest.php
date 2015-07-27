@@ -2,10 +2,8 @@
 
 use Digbang\Doctrine\LaravelNamingStrategy;
 use Digbang\Doctrine\Metadata\DecoupledMappingDriver;
-use Doctrine\Instantiator\Instantiator;
-use Doctrine\Instantiator\InstantiatorInterface;
+use Doctrine\Common\Persistence\Mapping\MappingException;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
-use Illuminate\Config\Repository;
 use Illuminate\Support\Str;
 use Tests\Fixtures\IntIdentityEntity;
 use Tests\Fixtures\Mappings\FakeClassMapping;
@@ -13,34 +11,26 @@ use Tests\Fixtures\Mappings\FakeClassMapping;
 class DecoupledMappingDriverTest extends \PHPUnit_Framework_TestCase
 {
 	/** @test */
-	public function it_should_instantiate_entity_mapping_classes_based_on_configuration()
+	public function it_should_load_metadata_for_classes_that_were_added_to_it()
 	{
-		$config = $this->getMock(Repository::class, ['get']);
-
-		$config->expects($this->any())->method('get')
-			->will($this->returnValueMap([
-				['doctrine-mappings.entities', [], [FakeClassMapping::class]],
-				['doctrine-mappings.embeddables', [], []],
-			]));
-
-		$mapping = $this->getMock(FakeClassMapping::class, ['build']);
-
-		$instantiator = $this->getMock(InstantiatorInterface::class, ['instantiate']);
-		$instantiator
-			->expects($this->once())
-			->method('instantiate')
-			->with(FakeClassMapping::class)
-			->willReturn($mapping);
-
-		$mapping
-			->expects($this->once())
-			->method('build');
-
 		$namingStrategy = new LaravelNamingStrategy(new Str);
 
-		/** @type Repository $config */
-		/** @type Instantiator $instantiator */
-		$driver = new DecoupledMappingDriver($config, $namingStrategy, $instantiator);
+		$driver = new DecoupledMappingDriver($namingStrategy);
+		$driver->addEntityMapping(new FakeClassMapping);
+		$driver->loadMetadataForClass(
+			IntIdentityEntity::class,
+			new ClassMetadataInfo(IntIdentityEntity::class, $namingStrategy)
+		);
+	}
+
+	/** @test */
+	public function it_should_fail_when_asked_for_metadata_that_was_not_added_to_it()
+	{
+		$namingStrategy = new LaravelNamingStrategy(new Str);
+
+		$driver = new DecoupledMappingDriver($namingStrategy);
+
+		$this->setExpectedException(MappingException::class);
 		$driver->loadMetadataForClass(
 			IntIdentityEntity::class,
 			new ClassMetadataInfo(IntIdentityEntity::class, $namingStrategy)

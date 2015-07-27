@@ -3,33 +3,23 @@
 use Doctrine\Common\Persistence\Mapping\ClassMetadata;
 use Doctrine\Common\Persistence\Mapping\Driver\MappingDriver;
 use Doctrine\Common\Persistence\Mapping\MappingException;
-use Doctrine\Instantiator\InstantiatorInterface;
 use Doctrine\ORM\Mapping\Builder\ClassMetadataBuilder;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use Doctrine\ORM\Mapping\NamingStrategy;
-use Illuminate\Contracts\Config\Repository;
 
 class DecoupledMappingDriver implements MappingDriver
 {
 	/**
+	 * EntityMapping objects for entities
 	 * @type array
 	 */
 	private $entities = [];
 
 	/**
+	 * EntityMapping objects for embeddables
 	 * @type array
 	 */
 	private $embeddables = [];
-
-	/**
-	 * @type bool
-	 */
-	private $loaded = false;
-
-	/**
-	 * @type Repository
-	 */
-	private $config;
 
 	/**
 	 * @type NamingStrategy
@@ -37,34 +27,43 @@ class DecoupledMappingDriver implements MappingDriver
 	private $namingStrategy;
 
 	/**
-	 * @type InstantiatorInterface
+	 * @param NamingStrategy $namingStrategy
 	 */
-	private $instantiator;
+	public function __construct(NamingStrategy $namingStrategy)
+	{
+		$this->namingStrategy = $namingStrategy;
+	}
 
 	/**
-	 * @param Repository            $config
-	 * @param NamingStrategy        $namingStrategy
-	 * @param InstantiatorInterface $instantiator
+	 * Add an entity to the driver.
+	 *
+	 * @param EntityMapping $entityMapping
 	 */
-	public function __construct(Repository $config, NamingStrategy $namingStrategy, InstantiatorInterface $instantiator)
+	public function addEntityMapping(EntityMapping $entityMapping)
 	{
-		$this->config         = $config;
-		$this->namingStrategy = $namingStrategy;
-		$this->instantiator   = $instantiator;
+		$this->entities[$entityMapping->getEntityName()] = $entityMapping;
+	}
+
+	/**
+	 * Add an embeddable to the driver.
+	 *
+	 * @param EntityMapping $entityMapping
+	 */
+	public function addEmbeddableMapping(EntityMapping $entityMapping)
+	{
+		$this->embeddables[$entityMapping->getEntityName()] = $entityMapping;
 	}
 
 	/**
 	 * Loads the metadata for the specified class into the provided container.
 	 *
-	 * @param string            $className
-	 * @param ClassMetadataInfo $metadata
+	 * @param string        $className
+	 * @param ClassMetadata $metadata
 	 *
-	 * @throws \Doctrine\Common\Persistence\Mapping\MappingException
+	 * @throws MappingException
 	 */
 	public function loadMetadataForClass($className, ClassMetadata $metadata)
 	{
-		$this->loadFromConfig();
-
 		$metadataClass = $this->getMappingFor($className);
 
 		$metadataClass->build($this->createBuilder($metadata));
@@ -77,8 +76,6 @@ class DecoupledMappingDriver implements MappingDriver
 	 */
 	public function getAllClassNames()
 	{
-		$this->loadFromConfig();
-
 		return array_merge(
 			array_keys($this->entities),
 			array_keys($this->embeddables)
@@ -95,32 +92,7 @@ class DecoupledMappingDriver implements MappingDriver
 	 */
 	public function isTransient($className)
 	{
-		$this->loadFromConfig();
-
 		return ! array_key_exists($className, $this->entities);
-	}
-
-	/**
-	 * Loads all entityMappings from the package configuration file
-	 */
-	private function loadFromConfig()
-	{
-		if (! $this->loaded)
-		{
-			foreach ($this->config->get('doctrine-mappings.entities', []) as $entityMapping)
-			{
-				/** @type $entityMapping EntityMapping */
-				$this->entities[$entityMapping::getEntityName()] = $entityMapping;
-			}
-
-			foreach ($this->config->get('doctrine-mappings.embeddables', []) as $entityMapping)
-			{
-				/** @type $entityMapping EntityMapping */
-				$this->embeddables[$entityMapping::getEntityName()] = $entityMapping;
-			}
-
-			$this->loaded = true;
-		}
 	}
 
 	/**
@@ -139,14 +111,7 @@ class DecoupledMappingDriver implements MappingDriver
 			throw new MappingException("Class '$className' does not have a mapping configuration.");
 		}
 
-		$metadataClass = $this->instantiator->instantiate($mappingClass);
-
-		if (! $metadataClass instanceof EntityMapping)
-		{
-			throw MappingException::invalidMappingFile($className, get_class($metadataClass));
-		}
-
-		return $metadataClass;
+		return $mappingClass;
 	}
 
 	/**

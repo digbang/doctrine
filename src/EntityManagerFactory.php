@@ -8,12 +8,12 @@ use Digbang\Doctrine\Events\EntityManagerCreated;
 use Digbang\Doctrine\Events\EntityManagerCreating;
 use Digbang\Doctrine\Filters\TrashedFilter;
 use Digbang\Doctrine\Listeners\SoftDeletableListener;
-use Digbang\Doctrine\Metadata\DecoupledMappingDriver;
 use Digbang\Doctrine\Query\AST\Functions\PlainTsqueryFunction;
 use Digbang\Doctrine\Query\AST\Functions\PlainTsrankFunction;
 use Digbang\Doctrine\Query\AST\Functions\TsqueryFunction;
 use Digbang\Doctrine\Query\AST\Functions\TsrankFunction;
 use Doctrine\Common\EventManager;
+use Doctrine\Common\Persistence\Mapping\Driver\MappingDriver;
 use Doctrine\DBAL\Driver\ServerInfoAwareConnection;
 use Doctrine\DBAL\Event\ConnectionEventArgs;
 use Doctrine\DBAL\Events as DBALEvents;
@@ -56,9 +56,9 @@ class EntityManagerFactory
 	private $laravelNamingStrategy;
 
 	/**
-	 * @type DecoupledMappingDriver
+	 * @type MappingDriver
 	 */
-	private $decoupledMappingDriver;
+	private $mappingDriver;
 
 	/**
 	 * @type EventManagerBridge
@@ -71,17 +71,17 @@ class EntityManagerFactory
 	 * @param DatabaseConfigurationBridge $databaseConfigurationBridge
 	 * @param RepositoryFactory           $repositoryFactory
 	 * @param LaravelNamingStrategy       $laravelNamingStrategy
-	 * @param DecoupledMappingDriver      $decoupledMappingDriver
+	 * @param MappingDriver               $mappingDriver
 	 * @param EventManagerBridge          $eventManagerBridge
 	 */
-	public function __construct(Repository $config, CacheBridge $cacheBridge, DatabaseConfigurationBridge $databaseConfigurationBridge, RepositoryFactory $repositoryFactory, LaravelNamingStrategy $laravelNamingStrategy, DecoupledMappingDriver $decoupledMappingDriver, EventManagerBridge $eventManagerBridge)
+	public function __construct(Repository $config, CacheBridge $cacheBridge, DatabaseConfigurationBridge $databaseConfigurationBridge, RepositoryFactory $repositoryFactory, LaravelNamingStrategy $laravelNamingStrategy, MappingDriver $mappingDriver, EventManagerBridge $eventManagerBridge)
 	{
 		$this->config                      = $config;
 		$this->cacheBridge                 = $cacheBridge;
 		$this->databaseConfigurationBridge = $databaseConfigurationBridge;
 		$this->repositoryFactory           = $repositoryFactory;
 		$this->laravelNamingStrategy       = $laravelNamingStrategy;
-		$this->decoupledMappingDriver      = $decoupledMappingDriver;
+		$this->mappingDriver               = $mappingDriver;
 		$this->eventManagerBridge          = $eventManagerBridge;
 	}
 
@@ -203,7 +203,7 @@ class EntityManagerFactory
 			$this->config->get('doctrine::doctrine.proxies.directory'),
 			$this->cacheBridge
 		);
-		$configuration->setMetadataDriverImpl($this->decoupledMappingDriver);
+		$configuration->setMetadataDriverImpl($this->mappingDriver);
 		$configuration->setAutoGenerateProxyClasses(
 			$this->config->get('doctrine::doctrine.proxies.autogenerate', true)
 		);

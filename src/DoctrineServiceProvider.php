@@ -1,10 +1,14 @@
 <?php namespace Digbang\Doctrine;
 
+use Digbang\Doctrine\Metadata\DecoupledMappingDriver;
 use Digbang\Doctrine\Types;
+use Doctrine\Common\Persistence\Mapping\Driver\MappingDriver;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\Instantiator\Instantiator;
 use Doctrine\Instantiator\InstantiatorInterface;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Mapping\NamingStrategy;
+use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Hashing\Hasher;
 use Illuminate\Support\ServiceProvider;
@@ -25,9 +29,11 @@ class DoctrineServiceProvider extends ServiceProvider
 		$this->mergeConfigFrom(__DIR__ . '/config/mappings.php', 'doctrine-mappings');
 		$this->mergeConfigFrom(__DIR__ . '/config/repositories.php', 'doctrine-repositories');
 
+		$this->registerNamingStrategy();
 		$this->registerEntityManager();
 		$this->registerClassMetadataFactory();
         $this->registerTypes();
+		$this->registerDecoupledMappingDriver();
 	}
 
 	private function registerEntityManager()
@@ -145,4 +151,32 @@ class DoctrineServiceProvider extends ServiceProvider
 		    }
 	    }
     }
+
+	private function registerDecoupledMappingDriver()
+	{
+		$this->app->singleton([MappingDriver::class => DecoupledMappingDriver::class], function(Container $app){
+			/** @type DecoupledMappingDriver $driver */
+			$driver = $this->app->make(DecoupledMappingDriver::class);
+
+			/** @type Repository $config */
+			$config = $app->make(Repository::class);
+
+			foreach ($config->get('doctrine-mappings.entities', []) as $mappingClass)
+			{
+				$driver->addEntityMapping($this->app->make($mappingClass));
+			}
+
+			foreach ($config->get('doctrine-mappings.embeddables', []) as $mappingClass)
+			{
+				$driver->addEmbeddableMapping($this->app->make($mappingClass));
+			}
+
+			return $driver;
+		});
+	}
+
+	private function registerNamingStrategy()
+	{
+		$this->app->singleton(NamingStrategy::class, LaravelNamingStrategy::class);
+	}
 }

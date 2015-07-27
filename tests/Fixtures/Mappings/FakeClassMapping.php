@@ -20,12 +20,10 @@ class FakeClassMapping implements EntityMapping
 
 	/**
 	 * Returns the fully qualified name of the entity that this mapper maps.
-	 * This needs to be static so that we can load all entity mapping names
-	 * without instantiating all EntityMapping classes.
 	 *
 	 * @return string
 	 */
-	public static function getEntityName()
+	public function getEntityName()
 	{
 		return IntIdentityEntity::class;
 	}
