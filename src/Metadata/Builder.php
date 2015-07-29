@@ -99,10 +99,15 @@ class Builder
 	 */
 	private $namingStrategy;
 
-	public function __construct(ClassMetadataBuilder $metadataBuilder, NamingStrategy $namingStrategy)
+	public function __construct(ClassMetadataBuilder $metadataBuilder, NamingStrategy $namingStrategy, $embeddable = false)
 	{
 		$this->metadataBuilder = $metadataBuilder;
 		$this->namingStrategy  = $namingStrategy;
+
+		if ($embeddable)
+		{
+			$this->embeddable();
+		}
 	}
 
 	/**
@@ -457,7 +462,7 @@ class Builder
 	 *
 	 * @return $this
 	 */
-	public function embeddable()
+	private function embeddable()
 	{
 		$this->metadataBuilder->setEmbeddable();
 

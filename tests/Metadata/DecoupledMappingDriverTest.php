@@ -16,7 +16,7 @@ class DecoupledMappingDriverTest extends \PHPUnit_Framework_TestCase
 		$namingStrategy = new LaravelNamingStrategy(new Str);
 
 		$driver = new DecoupledMappingDriver($namingStrategy);
-		$driver->addEntityMapping(new FakeClassMapping);
+		$driver->addMapping(new FakeClassMapping);
 		$driver->loadMetadataForClass(
 			IntIdentityEntity::class,
 			new ClassMetadataInfo(IntIdentityEntity::class, $namingStrategy)

@@ -10,13 +10,13 @@ use Doctrine\ORM\Mapping\NamingStrategy;
 class DecoupledMappingDriver implements MappingDriver
 {
 	/**
-	 * EntityMapping objects for entities
+	 * EntityMapping objects
 	 * @type array
 	 */
 	private $entities = [];
 
 	/**
-	 * EntityMapping objects for embeddables
+	 * EmbeddableMapping objects
 	 * @type array
 	 */
 	private $embeddables = [];
@@ -35,11 +35,34 @@ class DecoupledMappingDriver implements MappingDriver
 	}
 
 	/**
+	 * @param EntityMapping|EmbeddableMapping $mapping
+	 * @throws MappingException
+	 * @return void
+	 */
+	public function addMapping($mapping)
+	{
+		if ($mapping instanceof EntityMapping)
+		{
+			return $this->addEntityMapping($mapping);
+		}
+		elseif ($mapping instanceof EmbeddableMapping)
+		{
+			return $this->addEmbeddableMapping($mapping);
+		}
+
+		throw new MappingException(
+			'This driver expects an instance of ' .
+			EntityMapping::class . ' or ' . EmbeddableMapping::class .
+			', ' . get_class($mapping) . ' given.'
+		);
+	}
+
+	/**
 	 * Add an entity to the driver.
 	 *
 	 * @param EntityMapping $entityMapping
 	 */
-	public function addEntityMapping(EntityMapping $entityMapping)
+	private function addEntityMapping(EntityMapping $entityMapping)
 	{
 		$this->entities[$entityMapping->getEntityName()] = $entityMapping;
 	}
@@ -47,11 +70,11 @@ class DecoupledMappingDriver implements MappingDriver
 	/**
 	 * Add an embeddable to the driver.
 	 *
-	 * @param EntityMapping $entityMapping
+	 * @param EmbeddableMapping $entityMapping
 	 */
-	public function addEmbeddableMapping(EntityMapping $entityMapping)
+	private function addEmbeddableMapping(EmbeddableMapping $entityMapping)
 	{
-		$this->embeddables[$entityMapping->getEntityName()] = $entityMapping;
+		$this->embeddables[$entityMapping->getEmbeddableName()] = $entityMapping;
 	}
 
 	/**
@@ -64,9 +87,9 @@ class DecoupledMappingDriver implements MappingDriver
 	 */
 	public function loadMetadataForClass($className, ClassMetadata $metadata)
 	{
-		$metadataClass = $this->getMappingFor($className);
+		$mapping = $this->getMappingFor($className);
 
-		$metadataClass->build($this->createBuilder($metadata));
+		$mapping->build($this->createBuilder($metadata, $mapping));
 	}
 
 	/**
@@ -99,30 +122,33 @@ class DecoupledMappingDriver implements MappingDriver
 	 * Get the mapping class that corresponds to the given entity or embeddable.
 	 *
 	 * @param string $className
-	 * @return EntityMapping
+	 * @return EntityMapping|EmbeddableMapping
 	 * @throws MappingException
 	 */
 	private function getMappingFor($className)
 	{
-		$mappingClass = array_get(array_merge($this->embeddables, $this->entities), $className);
+		$mapping = array_get(array_merge($this->embeddables, $this->entities), $className);
 
-		if (! $mappingClass)
+		if (! $mapping)
 		{
 			throw new MappingException("Class '$className' does not have a mapping configuration.");
 		}
 
-		return $mappingClass;
+		return $mapping;
 	}
 
 	/**
-	 * @param ClassMetadataInfo $metadata
+	 * @param ClassMetadata|ClassMetadataInfo $metadata
+	 * @param EntityMapping|EmbeddableMapping $mapping
+	 *
 	 * @return Builder
 	 */
-	private function createBuilder(ClassMetadata $metadata)
+	private function createBuilder(ClassMetadata $metadata, $mapping)
 	{
 		return new Builder(
 			new ClassMetadataBuilder($metadata),
-			$this->namingStrategy
+			$this->namingStrategy,
+			$mapping instanceof EmbeddableMapping
 		);
 	}
 }

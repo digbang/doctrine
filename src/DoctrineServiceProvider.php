@@ -163,12 +163,12 @@ class DoctrineServiceProvider extends ServiceProvider
 
 			foreach ($config->get('doctrine-mappings.entities', []) as $mappingClass)
 			{
-				$driver->addEntityMapping($this->app->make($mappingClass));
+				$driver->addMapping($this->app->make($mappingClass));
 			}
 
 			foreach ($config->get('doctrine-mappings.embeddables', []) as $mappingClass)
 			{
-				$driver->addEmbeddableMapping($this->app->make($mappingClass));
+				$driver->addMapping($this->app->make($mappingClass));
 			}
 
 			return $driver;
