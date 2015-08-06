@@ -156,7 +156,7 @@ class DoctrineServiceProvider extends ServiceProvider
 	{
 		$this->app->singleton([MappingDriver::class => DecoupledMappingDriver::class], function(Container $app){
 			/** @type DecoupledMappingDriver $driver */
-			$driver = $this->app->make(DecoupledMappingDriver::class);
+			$driver = new DecoupledMappingDriver($app->make(NamingStrategy::class));
 
 			/** @type Repository $config */
 			$config = $app->make(Repository::class);
