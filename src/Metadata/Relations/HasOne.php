@@ -2,6 +2,12 @@
 
 use Doctrine\ORM\Mapping\Builder\ClassMetadataBuilder;
 
+/**
+ * Class HasOne
+ *
+ * @package Digbang\Doctrine\Metadata\Relations
+ * @method $this inversedBy($fieldName)
+ */
 class HasOne extends Relation
 {
 	public function __construct(ClassMetadataBuilder $metadataBuilder, $entityName, $relation)

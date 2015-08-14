@@ -1,8 +1,6 @@
 <?php namespace Digbang\Doctrine\Metadata\Relations;
 
 /**
- * @method $this mappedBy($fieldName)
- * @method $this inversedBy($fieldName)
  * @method $this cascadeAll()
  * @method $this cascadePersist()
  * @method $this cascadeRemove()
@@ -14,7 +12,6 @@
  * @method $this fetchLazy()
  * @method $this addJoinColumn($columnName, $referencedColumnName, $nullable = true, $unique = false, $onDelete = null, $columnDef = null)
  * @method $this build()
- * @method $this orphanRemoval()
  */
 abstract class Relation
 {
@@ -26,7 +23,7 @@ abstract class Relation
     /**
      * @return \Doctrine\ORM\Mapping\Builder\AssociationBuilder
      *
-     * * @deprecated This object now works as a proxy through the magic __call method.
+     * @deprecated This object now works as a proxy through the magic __call method.
      */
     public function getAssociationBuilder()
     {
