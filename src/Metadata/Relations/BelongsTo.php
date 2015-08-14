@@ -3,6 +3,13 @@
 use Doctrine\ORM\Mapping\Builder\ClassMetadataBuilder;
 use Doctrine\ORM\Mapping\NamingStrategy;
 
+/**
+ * Class BelongsTo
+ *
+ * @package Digbang\Doctrine\Metadata\Relations
+ * @method $this orphanRemoval()
+ * @method $this mappedBy($fieldName)
+ */
 class BelongsTo extends Relation
 {
 	private $keys = [];

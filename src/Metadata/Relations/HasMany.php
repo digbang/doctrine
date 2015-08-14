@@ -2,8 +2,21 @@
 
 use Doctrine\ORM\Mapping\Builder\ClassMetadataBuilder;
 
+/**
+ * Class HasMany
+ *
+ * @package Digbang\Doctrine\Metadata\Relations
+ * @method $this orphanRemoval()
+ * @method $this mappedBy($fieldName)
+ * @method $this setIndexBy($fieldName)
+ */
 class HasMany extends Relation
 {
+	/**
+     * @type \Doctrine\ORM\Mapping\Builder\OneToManyAssociationBuilder
+     */
+    protected $associationBuilder;
+
 	/**
 	 * @type array
 	 */
@@ -27,5 +40,15 @@ class HasMany extends Relation
 		$this->associationBuilder->setOrderBy($this->orderColumns);
 
 		return $this;
+	}
+
+	/**
+	 * @return \Doctrine\ORM\Mapping\Builder\OneToManyAssociationBuilder
+	 *
+	 * @deprecated This object now works as a proxy through the magic __call method.
+	 */
+	public function getAssociationBuilder()
+	{
+		return parent::getAssociationBuilder();
 	}
 }

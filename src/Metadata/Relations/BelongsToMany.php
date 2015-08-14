@@ -2,8 +2,24 @@
 
 use Doctrine\ORM\Mapping\Builder\ClassMetadataBuilder;
 
+/**
+ * Class BelongsToMany
+ *
+ * @package Digbang\Doctrine\Metadata\Relations
+ * @method $this mappedBy($fieldName)
+ * @method $this inversedBy($fieldName)
+ * @method $this orphanRemoval()
+ * @method $this setJoinTable($name)
+ * @method $this addInverseJoinColumn($columnName, $referencedColumnName, $nullable = true, $unique = false, $onDelete = null, $columnDef = null)
+ * @method $this setIndexBy($fieldName)
+ */
 class BelongsToMany extends Relation
 {
+	/**
+     * @type \Doctrine\ORM\Mapping\Builder\ManyToManyAssociationBuilder
+     */
+    protected $associationBuilder;
+
     /**
      * @type \Doctrine\ORM\Mapping\Builder\ManyToManyAssociationBuilder
      */
@@ -82,5 +98,15 @@ class BelongsToMany extends Relation
         $this->associationBuilder->setOrderBy($this->orderColumns);
 
         return $this;
+    }
+
+	/**
+     * @return \Doctrine\ORM\Mapping\Builder\ManyToManyAssociationBuilder
+     *
+     * @deprecated This object now works as a proxy through the magic __call method.
+     */
+    public function getAssociationBuilder()
+    {
+	    return parent::getAssociationBuilder();
     }
 }
