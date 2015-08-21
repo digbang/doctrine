@@ -135,7 +135,7 @@ class DecoupledMappingDriver implements MappingDriver
 			case array_key_exists($className, $this->embeddables):
 				return $this->embeddables[$className];
 			default:
-				throw MappingException::nonExistingClass($className);
+				throw new MappingException("Class '$className' does not have a mapping configuration.");
 		}
 	}
 
