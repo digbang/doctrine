@@ -7,5 +7,5 @@ in a Laravel project.
 
 | Laravel version | self.version | self.branch | 
 |----------------:|--------------|-------------|
-| ~4.2            | ~1.0         | 1.x         |
+| ~4.2            | ~2.0         | 2.x         |
 | ~5.1            | dev-master   | master      |
