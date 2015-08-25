@@ -135,21 +135,12 @@ class DoctrineServiceProvider extends ServiceProvider
 
     private function registerTypes()
     {
-	    foreach (
-		    [
-			    Types\CarbonType::DATETIMETZ => Types\CarbonDateTimeTzType::class,
-				Types\CarbonType::DATETIME   => Types\CarbonDateTimeType::class,
-				Types\CarbonType::DATE       => Types\CarbonDateType::class,
-				Types\CarbonType::TIME       => Types\CarbonTimeType::class,
-				Types\TsvectorType::TSVECTOR => Types\TsvectorType::class,
-		    ]
-		    as $type => $class)
-	    {
-		    if (! Type::hasType($type))
-		    {
-			    Type::addType($type, $class);
-		    }
-	    }
+	    Types\TypeExtender::instance()
+		    ->add(Types\CarbonType::DATETIMETZ, 'TIMESTAMP(0) WITH TIME ZONE',    Types\CarbonDateTimeTzType::class)
+			->add(Types\CarbonType::DATETIME,   'TIMESTAMP(0) WITHOUT TIME ZONE', Types\CarbonDateTimeType::class)
+			->add(Types\CarbonType::DATE,       'DATE',                           Types\CarbonDateType::class)
+			->add(Types\CarbonType::TIME,       'TIME(0) WITHOUT TIME ZONE',      Types\CarbonTimeType::class)
+			->add(Types\TsvectorType::TSVECTOR, 'TSVECTOR',                       Types\TsvectorType::class);
     }
 
 	private function registerDecoupledMappingDriver()

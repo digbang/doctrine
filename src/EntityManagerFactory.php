@@ -12,6 +12,7 @@ use Digbang\Doctrine\Query\AST\Functions\PlainTsqueryFunction;
 use Digbang\Doctrine\Query\AST\Functions\PlainTsrankFunction;
 use Digbang\Doctrine\Query\AST\Functions\TsqueryFunction;
 use Digbang\Doctrine\Query\AST\Functions\TsrankFunction;
+use Digbang\Doctrine\Types\TypeExtender;
 use Doctrine\Common\EventManager;
 use Doctrine\Common\Persistence\Mapping\Driver\MappingDriver;
 use Doctrine\DBAL\Driver\ServerInfoAwareConnection;
@@ -252,12 +253,10 @@ class EntityManagerFactory
 		$eventManager->addEventListener(Events::onFlush, new SoftDeletableListener());
 
 		$eventManager->addEventListener(DBALEvents::postConnect, function (ConnectionEventArgs $args) {
-			$platform = $args->getDatabasePlatform();
+			$typeExtender = TypeExtender::instance();
 
-			$platform->registerDoctrineTypeMapping(
-				'TSVECTOR',
-				Types\TsvectorType::TSVECTOR
-			);
+			$typeExtender->apply();
+			$typeExtender->register($args->getDatabasePlatform());
 
 			$connection = $args->getConnection();
 			if ($connection instanceof ServerInfoAwareConnection)
