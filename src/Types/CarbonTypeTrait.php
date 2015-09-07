@@ -21,6 +21,16 @@ trait CarbonTypeTrait
 
         return Carbon::instance($dt);
     }
+    
+	public function requiresSQLCommentHint(AbstractPlatform $platform)
+	{
+		return true;
+	}
+
+	public function canRequireSQLConversion()
+	{
+		return true;
+	}
 
     abstract public function getDateTime($value, AbstractPlatform $platform);
 }
