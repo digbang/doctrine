@@ -14,6 +14,7 @@ use Digbang\Doctrine\Query\AST\Functions\PlainTsrankFunction;
 use Digbang\Doctrine\Query\AST\Functions\TsqueryFunction;
 use Digbang\Doctrine\Query\AST\Functions\TsrankFunction;
 use Digbang\Doctrine\Types\TypeExtender;
+use Doctrine\Common\Cache\ArrayCache;
 use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Driver\ServerInfoAwareConnection;
 use Doctrine\DBAL\Event\ConnectionEventArgs;
@@ -202,7 +203,8 @@ class EntityManagerFactory
 		$configuration = Setup::createConfiguration(
 			$this->config->get('app.debug'),
 			$this->config->get('doctrine::doctrine.proxies.directory'),
-			$this->cacheBridge
+			// Use ArrayCache by default (no cache), then override if configured.
+			new ArrayCache()
 		);
 		$configuration->setMetadataDriverImpl($this->decoupledMappingDriver);
 		$configuration->setAutoGenerateProxyClasses(
