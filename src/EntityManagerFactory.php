@@ -7,6 +7,7 @@ use Digbang\Doctrine\Collectors\CacheDataCollector;
 use Digbang\Doctrine\Events\EntityManagerCreated;
 use Digbang\Doctrine\Events\EntityManagerCreating;
 use Digbang\Doctrine\Filters\TrashedFilter;
+use Digbang\Doctrine\Laravel\LaravelNamingStrategy;
 use Digbang\Doctrine\Listeners\SoftDeletableListener;
 use Digbang\Doctrine\Query\AST\Functions\PlainTsqueryFunction;
 use Digbang\Doctrine\Query\AST\Functions\PlainTsrankFunction;
@@ -27,6 +28,7 @@ use Doctrine\ORM\Cache\RegionsConfiguration;
 use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Events;
+use Doctrine\ORM\Mapping\NamingStrategy;
 use Doctrine\ORM\Tools\Setup;
 use Illuminate\Contracts\Config\Repository;
 
@@ -55,7 +57,7 @@ class EntityManagerFactory
 	/**
 	 * @type LaravelNamingStrategy
 	 */
-	private $laravelNamingStrategy;
+	private $namingStrategy;
 
 	/**
 	 * @type MappingDriver
@@ -72,17 +74,17 @@ class EntityManagerFactory
 	 * @param CacheBridge                 $cacheBridge
 	 * @param DatabaseConfigurationBridge $databaseConfigurationBridge
 	 * @param RepositoryFactory           $repositoryFactory
-	 * @param LaravelNamingStrategy       $laravelNamingStrategy
+	 * @param NamingStrategy              $namingStrategy
 	 * @param MappingDriver               $mappingDriver
 	 * @param EventManagerBridge          $eventManagerBridge
 	 */
-	public function __construct(Repository $config, CacheBridge $cacheBridge, DatabaseConfigurationBridge $databaseConfigurationBridge, RepositoryFactory $repositoryFactory, LaravelNamingStrategy $laravelNamingStrategy, MappingDriver $mappingDriver, EventManagerBridge $eventManagerBridge)
+	public function __construct(Repository $config, CacheBridge $cacheBridge, DatabaseConfigurationBridge $databaseConfigurationBridge, RepositoryFactory $repositoryFactory, NamingStrategy $namingStrategy, MappingDriver $mappingDriver, EventManagerBridge $eventManagerBridge)
 	{
 		$this->config                      = $config;
 		$this->cacheBridge                 = $cacheBridge;
 		$this->databaseConfigurationBridge = $databaseConfigurationBridge;
 		$this->repositoryFactory           = $repositoryFactory;
-		$this->laravelNamingStrategy       = $laravelNamingStrategy;
+		$this->namingStrategy              = $namingStrategy;
 		$this->mappingDriver               = $mappingDriver;
 		$this->eventManagerBridge          = $eventManagerBridge;
 	}
@@ -106,7 +108,7 @@ class EntityManagerFactory
 
 		if ($debugBar !== null)
 		{
-			$this->addSQLLogger($debugBar, $configuration);
+			$this->addSQLLogger($configuration, $debugBar);
 		}
 
 		$this->fireCreatingEvent($conn, $configuration);
@@ -122,12 +124,12 @@ class EntityManagerFactory
 	}
 
 	/**
-	 * @param \DebugBar\DebugBar $debugBar
 	 * @param Configuration      $configuration
+	 * @param \DebugBar\DebugBar $debugBar
 	 *
 	 * @throws \DebugBar\DebugBarException
 	 */
-	private function addSQLLogger(\DebugBar\DebugBar $debugBar, Configuration $configuration)
+	private function addSQLLogger(Configuration $configuration, \DebugBar\DebugBar $debugBar)
 	{
 		$debugStack = new DebugStack();
 		$configuration->setSQLLogger($debugStack);
@@ -135,12 +137,12 @@ class EntityManagerFactory
 	}
 
 	/**
-	 * @param \DebugBar\DebugBar               $debugBar
 	 * @param CacheConfiguration $configuration
+	 * @param \DebugBar\DebugBar $debugBar
 	 *
 	 * @throws \DebugBar\DebugBarException
 	 */
-	private function addCacheLogger(\DebugBar\DebugBar $debugBar, CacheConfiguration $configuration)
+	private function addCacheLogger(CacheConfiguration $configuration, \DebugBar\DebugBar $debugBar)
 	{
 		$cacheLogger = new StatisticsCacheLogger();
 		$configuration->setCacheLogger($cacheLogger);
@@ -149,7 +151,8 @@ class EntityManagerFactory
 	}
 
 	/**
-	 * @param Configuration $configuration
+	 * @param Configuration      $configuration
+	 * @param \DebugBar\DebugBar $debugBar
 	 */
 	private function addCacheImplementation(Configuration $configuration, \DebugBar\DebugBar $debugBar = null)
 	{
@@ -189,7 +192,7 @@ class EntityManagerFactory
 
 			if ($debugBar)
 			{
-				$this->addCacheLogger($debugBar, $cacheConfig);
+				$this->addCacheLogger($cacheConfig, $debugBar);
 			}
 		}
 	}
@@ -211,13 +214,13 @@ class EntityManagerFactory
 			$this->config->get('doctrine::doctrine.proxies.autogenerate', true)
 		);
 		$configuration->setRepositoryFactory($this->repositoryFactory);
-		$configuration->setNamingStrategy($this->laravelNamingStrategy);
+		$configuration->setNamingStrategy($this->namingStrategy);
 		$configuration->addFilter('trashed', TrashedFilter::class);
 
-		$configuration->addCustomStringFunction(TsqueryFunction::TSQUERY, TsqueryFunction::class);
+		$configuration->addCustomStringFunction(TsqueryFunction::TSQUERY,            TsqueryFunction::class);
 		$configuration->addCustomStringFunction(PlainTsqueryFunction::PLAIN_TSQUERY, PlainTsqueryFunction::class);
-		$configuration->addCustomStringFunction(TsrankFunction::TSRANK, TsrankFunction::class);
-		$configuration->addCustomStringFunction(PlainTsrankFunction::PLAIN_TSRANK, PlainTsrankFunction::class);
+		$configuration->addCustomStringFunction(TsrankFunction::TSRANK,              TsrankFunction::class);
+		$configuration->addCustomStringFunction(PlainTsrankFunction::PLAIN_TSRANK,   PlainTsrankFunction::class);
 
 		return $configuration;
 	}

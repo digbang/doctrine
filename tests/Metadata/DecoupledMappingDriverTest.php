@@ -1,6 +1,6 @@
 <?php namespace Tests\Metadata;
 
-use Digbang\Doctrine\LaravelNamingStrategy;
+use Digbang\Doctrine\Laravel\LaravelNamingStrategy;
 use Digbang\Doctrine\Metadata\DecoupledMappingDriver;
 use Doctrine\Common\Persistence\Mapping\MappingException;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;

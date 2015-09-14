@@ -1,6 +1,6 @@
 <?php namespace Tests\Metadata;
 
-use Digbang\Doctrine\LaravelNamingStrategy;
+use Digbang\Doctrine\Laravel\LaravelNamingStrategy;
 use Digbang\Doctrine\Metadata\Builder;
 use Doctrine\ORM\Mapping\Builder\ClassMetadataBuilder;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;

@@ -1,4 +1,4 @@
-<?php namespace Digbang\Doctrine;
+<?php namespace Digbang\Doctrine\Laravel;
 
 use Doctrine\ORM\Mapping\NamingStrategy;
 use Illuminate\Support\Str;

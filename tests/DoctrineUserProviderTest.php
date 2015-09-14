@@ -1,6 +1,6 @@
 <?php namespace Tests;
 
-use Digbang\Doctrine\DoctrineUserProvider;
+use Digbang\Doctrine\Laravel\DoctrineUserProvider;
 use Doctrine\Common\Persistence\ObjectRepository;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadata;

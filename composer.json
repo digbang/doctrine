@@ -9,6 +9,7 @@
     },
     "require-dev": {
         "illuminate/cache":  "~5.1",
+        "illuminate/console": "~5.1",
         "maximebf/debugbar": "~1.10",
         "phpunit/phpunit":   "~4.0"
     },

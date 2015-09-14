@@ -1,4 +1,4 @@
-<?php namespace Digbang\Doctrine;
+<?php namespace Digbang\Doctrine\Laravel;
 
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityRepository;

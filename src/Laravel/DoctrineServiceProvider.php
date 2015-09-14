@@ -1,11 +1,10 @@
-<?php namespace Digbang\Doctrine;
+<?php namespace Digbang\Doctrine\Laravel;
 
+use Digbang\Doctrine\Commands;
+use Digbang\Doctrine\EntityManagerFactory;
 use Digbang\Doctrine\Metadata\DecoupledMappingDriver;
 use Digbang\Doctrine\Types;
 use Doctrine\Common\Persistence\Mapping\Driver\MappingDriver;
-use Doctrine\DBAL\Types\Type;
-use Doctrine\Instantiator\Instantiator;
-use Doctrine\Instantiator\InstantiatorInterface;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\NamingStrategy;
 use Illuminate\Contracts\Config\Repository;
@@ -36,11 +35,13 @@ class DoctrineServiceProvider extends ServiceProvider
 		$this->registerDecoupledMappingDriver();
 	}
 
+	private function registerNamingStrategy()
+	{
+		$this->app->singleton(NamingStrategy::class, LaravelNamingStrategy::class);
+	}
+
 	private function registerEntityManager()
 	{
-		// Bind the instantiator interface so that the container can build our driver
-		$this->app->bind(InstantiatorInterface::class, Instantiator::class);
-
 		// bind the EM interface to our only EM as a singleton
 		$this->app->singleton(EntityManagerInterface::class, EntityManager::class);
 
@@ -68,10 +69,10 @@ class DoctrineServiceProvider extends ServiceProvider
 		$configPath = $this->app->make('path.config');
 
 		$this->publishes([
-			__DIR__ . '/config/cache.php'        => $configPath . '/doctrine-cache.php',
-			__DIR__ . '/config/doctrine.php'     => $configPath . '/doctrine.php',
-			__DIR__ . '/config/mappings.php'     => $configPath . '/doctrine-mappings.php',
-			__DIR__ . '/config/repositories.php' => $configPath . '/doctrine-repositories.php',
+			dirname(__DIR__) . '/config/cache.php'        => $configPath . '/doctrine-cache.php',
+			dirname(__DIR__) . '/config/doctrine.php'     => $configPath . '/doctrine.php',
+			dirname(__DIR__) . '/config/mappings.php'     => $configPath . '/doctrine-mappings.php',
+			dirname(__DIR__) . '/config/repositories.php' => $configPath . '/doctrine-repositories.php',
 		], 'config');
 
         $this->registerAuthDriver();
@@ -159,10 +160,5 @@ class DoctrineServiceProvider extends ServiceProvider
 
 			return $driver;
 		});
-	}
-
-	private function registerNamingStrategy()
-	{
-		$this->app->singleton(NamingStrategy::class, LaravelNamingStrategy::class);
 	}
 }
