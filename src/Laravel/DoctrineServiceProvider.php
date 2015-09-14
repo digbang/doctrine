@@ -68,6 +68,9 @@ class DoctrineServiceProvider extends ServiceProvider
 		});
 	}
 
+	/**
+	 * Register custom types in the TypeExtender
+	 */
 	private function registerTypes()
 	{
 		Types\TypeExtender::instance()
@@ -78,6 +81,9 @@ class DoctrineServiceProvider extends ServiceProvider
 			->add(Types\TsvectorType::TSVECTOR, 'TSVECTOR',                       Types\TsvectorType::class);
 	}
 
+	/**
+	 * Register the mapping driver
+	 */
 	private function registerDecoupledMappingDriver()
 	{
 		$this->app->singleton([MappingDriver::class => DecoupledMappingDriver::class], function(Container $app){
@@ -96,6 +102,9 @@ class DoctrineServiceProvider extends ServiceProvider
 		});
 	}
 
+	/**
+	 * Publish configurations so users can import them to their config dir
+	 */
 	private function publishConfiguration()
 	{
 		$configPath = $this->app->make('path.config');
@@ -104,10 +113,12 @@ class DoctrineServiceProvider extends ServiceProvider
 			dirname(__DIR__) . '/config/cache.php'        => $configPath . '/doctrine-cache.php',
 			dirname(__DIR__) . '/config/doctrine.php'     => $configPath . '/doctrine.php',
 			dirname(__DIR__) . '/config/mappings.php'     => $configPath . '/doctrine-mappings.php',
-			dirname(__DIR__) . '/config/repositories.php' => $configPath . '/doctrine-repositories.php',
 		], 'config');
 	}
 
+	/**
+	 * Extend the AuthManager with a Doctrine driver.
+	 */
     private function extendAuthDriver()
     {
 	    $this->app->extend('auth', function(\Illuminate\Auth\AuthManager $auth) {
@@ -123,6 +134,9 @@ class DoctrineServiceProvider extends ServiceProvider
 	    });
     }
 
+	/**
+	 * Add doctrine commands to artisan
+	 */
 	private function addConsoleCommands()
 	{
 		$commands = [
