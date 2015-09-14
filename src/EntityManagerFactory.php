@@ -50,11 +50,6 @@ class EntityManagerFactory
 	private $databaseConfigurationBridge;
 
 	/**
-	 * @type RepositoryFactory
-	 */
-	private $repositoryFactory;
-
-	/**
 	 * @type LaravelNamingStrategy
 	 */
 	private $namingStrategy;
@@ -73,17 +68,15 @@ class EntityManagerFactory
 	 * @param Repository                  $config
 	 * @param CacheBridge                 $cacheBridge
 	 * @param DatabaseConfigurationBridge $databaseConfigurationBridge
-	 * @param RepositoryFactory           $repositoryFactory
 	 * @param NamingStrategy              $namingStrategy
 	 * @param MappingDriver               $mappingDriver
 	 * @param EventManagerBridge          $eventManagerBridge
 	 */
-	public function __construct(Repository $config, CacheBridge $cacheBridge, DatabaseConfigurationBridge $databaseConfigurationBridge, RepositoryFactory $repositoryFactory, NamingStrategy $namingStrategy, MappingDriver $mappingDriver, EventManagerBridge $eventManagerBridge)
+	public function __construct(Repository $config, CacheBridge $cacheBridge, DatabaseConfigurationBridge $databaseConfigurationBridge, NamingStrategy $namingStrategy, MappingDriver $mappingDriver, EventManagerBridge $eventManagerBridge)
 	{
 		$this->config                      = $config;
 		$this->cacheBridge                 = $cacheBridge;
 		$this->databaseConfigurationBridge = $databaseConfigurationBridge;
-		$this->repositoryFactory           = $repositoryFactory;
 		$this->namingStrategy              = $namingStrategy;
 		$this->mappingDriver               = $mappingDriver;
 		$this->eventManagerBridge          = $eventManagerBridge;
@@ -213,7 +206,6 @@ class EntityManagerFactory
 		$configuration->setAutoGenerateProxyClasses(
 			$this->config->get('doctrine::doctrine.proxies.autogenerate', true)
 		);
-		$configuration->setRepositoryFactory($this->repositoryFactory);
 		$configuration->setNamingStrategy($this->namingStrategy);
 		$configuration->addFilter('trashed', TrashedFilter::class);
 

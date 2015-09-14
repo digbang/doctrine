@@ -12,7 +12,6 @@ use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Hashing\Hasher;
 use Illuminate\Support\ServiceProvider;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Mapping\ClassMetadataFactory;
 
 class DoctrineServiceProvider extends ServiceProvider
 {
@@ -26,11 +25,9 @@ class DoctrineServiceProvider extends ServiceProvider
 		$this->mergeConfigFrom(__DIR__ . '/config/cache.php', 'doctrine-cache');
 		$this->mergeConfigFrom(__DIR__ . '/config/doctrine.php', 'doctrine');
 		$this->mergeConfigFrom(__DIR__ . '/config/mappings.php', 'doctrine-mappings');
-		$this->mergeConfigFrom(__DIR__ . '/config/repositories.php', 'doctrine-repositories');
 
 		$this->registerNamingStrategy();
 		$this->registerEntityManager();
-		$this->registerClassMetadataFactory();
         $this->registerTypes();
 		$this->registerDecoupledMappingDriver();
 	}
@@ -54,13 +51,6 @@ class DoctrineServiceProvider extends ServiceProvider
 			}
 
             return $app->make(EntityManagerFactory::class)->create($debugbar);
-		});
-	}
-
-	private function registerClassMetadataFactory()
-	{
-		$this->app->singleton(ClassMetadataFactory::class, function ($app) {
-			return $app[EntityManager::class]->getMetadataFactory();
 		});
 	}
 
@@ -125,13 +115,17 @@ class DoctrineServiceProvider extends ServiceProvider
 
     private function registerAuthDriver()
     {
-        $this->app['auth']->extend('doctrine', function ($app) {
-            return new DoctrineUserProvider(
-                $app[Hasher::class],
-                $app[EntityManager::class],
-                $app['config']['auth.model']
-            );
-        });
+	    $this->app->extend('Illuminate\Auth\AuthManager', function(\Illuminate\Auth\AuthManager $auth) {
+		    $auth->extend('doctrine', function(Container $container) {
+	            return new DoctrineUserProvider(
+	                $container[Hasher::class],
+	                $container[EntityManager::class],
+	                $container['config']['auth.model']
+	            );
+	        });
+
+		    return $auth;
+	    });
     }
 
     private function registerTypes()
