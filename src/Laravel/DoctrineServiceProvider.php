@@ -115,7 +115,7 @@ class DoctrineServiceProvider extends ServiceProvider
 
     private function registerAuthDriver()
     {
-	    $this->app->extend('Illuminate\Auth\AuthManager', function(\Illuminate\Auth\AuthManager $auth) {
+	    $this->app->extend('auth', function(\Illuminate\Auth\AuthManager $auth) {
 		    $auth->extend('doctrine', function(Container $container) {
 	            return new DoctrineUserProvider(
 	                $container[Hasher::class],
