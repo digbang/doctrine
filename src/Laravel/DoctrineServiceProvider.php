@@ -22,9 +22,9 @@ class DoctrineServiceProvider extends ServiceProvider
 	 */
 	public function register()
 	{
-		$this->mergeConfigFrom(__DIR__ . '/config/cache.php', 'doctrine-cache');
-		$this->mergeConfigFrom(__DIR__ . '/config/doctrine.php', 'doctrine');
-		$this->mergeConfigFrom(__DIR__ . '/config/mappings.php', 'doctrine-mappings');
+		$this->mergeConfigFrom(dirname(dirname(__DIR__)) . '/config/cache.php', 'doctrine-cache');
+		$this->mergeConfigFrom(dirname(dirname(__DIR__)) . '/config/doctrine.php', 'doctrine');
+		$this->mergeConfigFrom(dirname(dirname(__DIR__)) . '/config/mappings.php', 'doctrine-mappings');
 
 		$this->registerNamingStrategy();
 		$this->registerEntityManager();
@@ -110,9 +110,9 @@ class DoctrineServiceProvider extends ServiceProvider
 		$configPath = $this->app->make('path.config');
 
 		$this->publishes([
-			dirname(__DIR__) . '/config/cache.php'        => $configPath . '/doctrine-cache.php',
-			dirname(__DIR__) . '/config/doctrine.php'     => $configPath . '/doctrine.php',
-			dirname(__DIR__) . '/config/mappings.php'     => $configPath . '/doctrine-mappings.php',
+			dirname(dirname(__DIR__)) . '/config/cache.php'        => $configPath . '/doctrine-cache.php',
+			dirname(dirname(__DIR__)) . '/config/doctrine.php'     => $configPath . '/doctrine.php',
+			dirname(dirname(__DIR__)) . '/config/mappings.php'     => $configPath . '/doctrine-mappings.php',
 		], 'config');
 	}
 
