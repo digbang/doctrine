@@ -1,5 +1,6 @@
 <?php namespace Digbang\Doctrine\Types;
 
+use Doctrine\DBAL\Event\ConnectionEventArgs;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\Type;
 
@@ -56,7 +57,7 @@ class TypeExtender
 	 *
 	 * @throws \Doctrine\DBAL\DBALException
 	 */
-	public function apply()
+	private function apply()
 	{
 		foreach ($this->extensions as list($type, $dbType, $class))
 		{
@@ -77,11 +78,22 @@ class TypeExtender
 	 * @param AbstractPlatform $platform
 	 * @throws \Doctrine\DBAL\DBALException
 	 */
-	public function register(AbstractPlatform $platform)
+	private function register(AbstractPlatform $platform)
 	{
 		foreach ($this->extensions as list($type, $dbType, $class))
 		{
 			$platform->registerDoctrineTypeMapping($dbType, $type);
 		}
+	}
+
+	/**
+	 * Apply registered types.
+	 *
+	 * @param ConnectionEventArgs $args
+	 */
+	public function postConnect(ConnectionEventArgs $args)
+	{
+		$this->apply();
+		$this->register($args->getDatabasePlatform());
 	}
 }

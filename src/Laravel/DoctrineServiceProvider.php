@@ -1,11 +1,21 @@
 <?php namespace Digbang\Doctrine\Laravel;
 
+use Digbang\Doctrine\Bridges\CacheBridge;
+use Digbang\Doctrine\Bridges\EventManagerBridge;
 use Digbang\Doctrine\Commands;
 use Digbang\Doctrine\EntityManagerFactory;
+use Digbang\Doctrine\Events\EntityManagerCreating;
+use Digbang\Doctrine\Listeners\DBVersionPersister;
+use Digbang\Doctrine\Listeners\DebugLogging;
+use Digbang\Doctrine\Listeners\SoftDeletableListener;
 use Digbang\Doctrine\Metadata\DecoupledMappingDriver;
 use Digbang\Doctrine\Types;
+use Doctrine\Common\Cache\CacheProvider;
+use Doctrine\Common\EventManager;
 use Doctrine\Common\Persistence\Mapping\Driver\MappingDriver;
+use Doctrine\DBAL\Events as DBALEvents;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Events;
 use Doctrine\ORM\Mapping\NamingStrategy;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Container\Container;
@@ -26,7 +36,7 @@ class DoctrineServiceProvider extends ServiceProvider
 		$this->mergeConfigFrom(dirname(dirname(__DIR__)) . '/config/doctrine.php', 'doctrine');
 		$this->mergeConfigFrom(dirname(dirname(__DIR__)) . '/config/mappings.php', 'doctrine-mappings');
 
-		$this->registerNamingStrategy();
+		$this->registerDoctrineImplementations();
 		$this->registerEntityManager();
         $this->registerTypes();
 		$this->registerDecoupledMappingDriver();
@@ -35,21 +45,26 @@ class DoctrineServiceProvider extends ServiceProvider
 	/**
 	 * Boot the service provider.
 	 *
-	 * @return void
+	 * @param EventManager  $eventManager
+	 * @param CacheProvider $cache
+	 * @param Repository    $config
 	 */
-	public function boot()
+	public function boot(EventManager $eventManager, CacheProvider $cache, Repository $config)
 	{
 		$this->publishConfiguration();
+		$this->addEventListeners($eventManager, $cache, $config);
 		$this->extendAuthDriver();
 		$this->addConsoleCommands();
 	}
 
 	/**
-	 * Register the Laravel naming strategy
+	 * Register Doctrine interfaces in Laravel's Container
 	 */
-	private function registerNamingStrategy()
+	private function registerDoctrineImplementations()
 	{
 		$this->app->singleton(NamingStrategy::class, LaravelNamingStrategy::class);
+		$this->app->singleton(EventManager::class,   EventManagerBridge::class);
+		$this->app->singleton(CacheProvider::class,  CacheBridge::class);
 	}
 
 	/**
@@ -58,13 +73,7 @@ class DoctrineServiceProvider extends ServiceProvider
 	private function registerEntityManager()
 	{
 		$this->app->singleton([EntityManagerInterface::class => EntityManager::class], function(Container $app) {
-			$debugbar = null;
-			if (isset($app['debugbar']))
-			{
-				$debugbar = $app['debugbar'];
-			}
-
-            return $app->make(EntityManagerFactory::class)->create($debugbar);
+            return $app->make(EntityManagerFactory::class)->create();
 		});
 	}
 
@@ -184,5 +193,26 @@ class DoctrineServiceProvider extends ServiceProvider
 		}
 
 		$this->commands($commands);
+	}
+
+	/**
+	 * Add base doctrine events.
+	 *
+	 * @param EventManager  $eventManager
+	 * @param CacheProvider $cache
+	 * @param Repository    $config
+	 */
+	private function addEventListeners(EventManager $eventManager, CacheProvider $cache, Repository $config)
+	{
+		$eventManager->addEventListener(Events::onFlush, new SoftDeletableListener);
+		$eventManager->addEventListener(DBALEvents::postConnect, new DBVersionPersister($cache));
+		$eventManager->addEventListener(DBALEvents::postConnect, Types\TypeExtender::instance());
+
+		if ($config->get('app.debug') && isset($this->app['debugbar'])){
+			$eventManager->addEventListener(
+				EntityManagerCreating::class,
+				new DebugLogging($this->app['debugbar'])
+			);
+		}
 	}
 }

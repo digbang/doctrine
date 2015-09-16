@@ -92,7 +92,7 @@ abstract class AbstractMigrationCommand extends Command
                     $configuration = new $class($conn, $outputWriter);
                     $configuration->load($this->option('configuration'));
                     break;
-                case ($config->has('doctrine::doctrine.migrations.directory') && $config->has('doctrine::doctrine.migrations.namespace')):
+                case ($config->has('doctrine.migrations.directory') && $config->has('doctrine.migrations.namespace')):
                     $configuration = new LaravelConfiguration($conn, $outputWriter);
                     $configuration->load($config);
                     break;
