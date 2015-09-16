@@ -23,18 +23,6 @@ class SchemaCommand extends Command
     protected $description = 'Validate the mapping files.';
 
     /**
-     * @type EntityManagerInterface
-     */
-    private $em;
-
-    public function __construct(EntityManagerInterface $em)
-    {
-        parent::__construct();
-
-        $this->em = $em;
-    }
-
-    /**
      * {@inheritdoc}
      */
     protected function configure()
@@ -45,9 +33,8 @@ class SchemaCommand extends Command
     /**
      * {@inheritdoc}
      */
-    protected function fire()
+    public function handle(EntityManagerInterface $em)
     {
-        $em = $this->em;
         $validator = new SchemaValidator($em);
         $exit = 0;
 

@@ -1,5 +1,7 @@
 <?php namespace Digbang\Doctrine\Commands\Migrations;
 
+use Doctrine\ORM\EntityManagerInterface;
+use Illuminate\Contracts\Config\Repository;
 use Symfony\Component\Console\Input\InputOption;
 use Doctrine\ORM\Tools\SchemaTool;
 use Doctrine\DBAL\Version as DbalVersion;
@@ -34,12 +36,11 @@ EOT
             );
     }
 
-    public function fire()
+    public function handle(EntityManagerInterface $em, Repository $config)
     {
         $isDbalOld = (DbalVersion::compare('2.2.0') > 0);
-        $configuration = $this->getMigrationConfiguration();
+        $configuration = $this->getMigrationConfiguration($em, $config);
 
-        $em = $this->em;
         $conn = $em->getConnection();
         $platform = $conn->getDatabasePlatform();
         $metadata = $em->getMetadataFactory()->getAllMetadata();

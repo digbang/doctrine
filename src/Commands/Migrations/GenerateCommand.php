@@ -1,5 +1,7 @@
 <?php namespace Digbang\Doctrine\Commands\Migrations;
 
+use Doctrine\ORM\EntityManagerInterface;
+use Illuminate\Contracts\Config\Repository;
 use Symfony\Component\Console\Input\InputOption;
 use Doctrine\DBAL\Migrations\Configuration\Configuration;
 
@@ -54,9 +56,9 @@ EOT
         );
     }
 
-    public function fire()
+    public function handle(EntityManagerInterface $em, Repository $config)
     {
-        $configuration = $this->getMigrationConfiguration();
+        $configuration = $this->getMigrationConfiguration($em, $config);
 
         $version = date('YmdHis');
         $path = $this->generateMigration($configuration, $version);

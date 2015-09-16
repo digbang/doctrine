@@ -22,18 +22,6 @@ class ImportCommand extends Command
     protected $description = 'Executes SQL file(s) directly to Database.';
 
     /**
-     * @type EntityManagerInterface
-     */
-    private $em;
-
-    public function __construct(EntityManagerInterface $em)
-    {
-        parent::__construct();
-
-        $this->em = $em;
-    }
-
-    /**
      * {@inheritdoc}
      */
     protected function configure()
@@ -51,9 +39,9 @@ class ImportCommand extends Command
     /**
      * {@inheritdoc}
      */
-    protected function fire()
+    public function handle(EntityManagerInterface $em)
     {
-        $conn = $this->em->getConnection();
+        $conn = $em->getConnection();
 
         if (($fileNames = $this->argument('file')) !== null) {
             foreach ((array) $fileNames as $fileName) {

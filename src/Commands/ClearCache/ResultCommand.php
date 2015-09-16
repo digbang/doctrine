@@ -23,18 +23,6 @@ class ResultCommand extends Command
     protected $description = 'Clear all result cache of the various cache drivers.';
 
     /**
-     * @type EntityManagerInterface
-     */
-    private $em;
-
-    public function __construct(EntityManagerInterface $em)
-    {
-        parent::__construct();
-
-        $this->em = $em;
-    }
-
-    /**
      * {@inheritdoc}
      */
     protected function configure()
@@ -72,9 +60,8 @@ EOT
     /**
      * {@inheritdoc}
      */
-    protected function fire()
+    public function handle(EntityManagerInterface $em)
     {
-        $em = $this->em;
         $cacheDriver = $em->getConfiguration()->getResultCacheImpl();
 
         if ( ! $cacheDriver) {

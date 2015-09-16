@@ -23,17 +23,6 @@ class RunDqlCommand extends Command
     protected $description = 'Executes arbitrary DQL directly from the command line.';
 
     /**
-     * @type EntityManagerInterface
-     */
-    private $em;
-
-    public function __construct(EntityManagerInterface $em)
-    {
-        parent::__construct();
-        $this->em = $em;
-    }
-
-    /**
      * {@inheritdoc}
      */
     protected function configure()
@@ -44,11 +33,8 @@ class RunDqlCommand extends Command
     /**
      * {@inheritdoc}
      */
-    protected function fire()
+    public function handle(EntityManagerInterface $em)
     {
-        /* @var $em \Doctrine\ORM\EntityManagerInterface */
-        $em = $this->em;
-
         if (($dql = $this->argument('dql')) === null) {
             throw new \RuntimeException("Argument 'DQL' is required in order to execute this command correctly.");
         }

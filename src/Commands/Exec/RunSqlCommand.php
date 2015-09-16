@@ -23,18 +23,6 @@ class RunSqlCommand extends Command
     protected $description = 'Executes arbitrary SQL directly from the command line.';
 
     /**
-     * @type EntityManagerInterface
-     */
-    private $em;
-
-    public function __construct(EntityManagerInterface $em)
-    {
-        parent::__construct();
-
-        $this->em = $em;
-    }
-
-    /**
      * {@inheritdoc}
      */
     protected function configure()
@@ -59,9 +47,9 @@ class RunSqlCommand extends Command
     /**
      * {@inheritdoc}
      */
-    protected function fire()
+    public function handle(EntityManagerInterface $em)
     {
-        $conn = $this->em->getConnection();
+        $conn = $em->getConnection();
 
         if (($sql = $this->argument('sql')) === null) {
             throw new \RuntimeException("Argument 'SQL' is required in order to execute this command correctly.");

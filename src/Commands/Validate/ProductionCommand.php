@@ -24,18 +24,6 @@ class ProductionCommand extends Command
     protected $description = 'Verify that Doctrine is properly configured for a production environment.';
 
     /**
-     * @type EntityManagerInterface
-     */
-    private $em;
-
-    public function __construct(EntityManagerInterface $em)
-    {
-        parent::__construct();
-
-        $this->em = $em;
-    }
-
-    /**
      * {@inheritdoc}
      */
     protected function configure()
@@ -56,10 +44,8 @@ class ProductionCommand extends Command
     /**
      * {@inheritdoc}
      */
-    protected function fire()
+    public function handle(EntityManagerInterface $em)
     {
-        $em = $this->em;
-
         try {
             $em->getConfiguration()->ensureProductionSettings();
 

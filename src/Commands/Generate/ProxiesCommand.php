@@ -22,17 +22,6 @@ class ProxiesCommand extends Command
 
     protected $description = 'Generates proxy classes for entity classes.';
 
-    /**
-     * @type EntityManagerInterface
-     */
-    private $em;
-
-    public function __construct(EntityManagerInterface $em)
-    {
-        parent::__construct();
-        $this->em = $em;
-    }
-
     protected function configure()
     {
         $this->setHelp('Generates proxy classes for entity classes.');
@@ -41,10 +30,8 @@ class ProxiesCommand extends Command
     /**
      * {@inheritdoc}
      */
-    protected function fire()
+    public function handle(EntityManagerInterface $em)
     {
-        $em = $this->em;
-
         $metadatas = $em->getMetadataFactory()->getAllMetadata();
         $metadatas = MetadataFilter::filter($metadatas, $this->option('filter'));
 

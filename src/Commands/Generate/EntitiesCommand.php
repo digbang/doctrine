@@ -23,18 +23,6 @@ class EntitiesCommand extends Command
     protected $name = 'doctrine:generate:entities';
 
     protected $description = 'Generate entity classes and method stubs from your mapping information.';
-    
-    /**
-     * @type EntityManagerInterface
-     */
-    private $em;
-
-    public function __construct(EntityManagerInterface $em)
-    {
-        parent::__construct();
-        
-        $this->em = $em;
-    }
 
     /**
      * {@inheritdoc}
@@ -67,10 +55,8 @@ EOT
     /**
      * {@inheritdoc}
      */
-    protected function fire()
+    public function handle(EntityManagerInterface $em)
     {
-        $em = $this->em;
-
         $cmf = new DisconnectedClassMetadataFactory();
         $cmf->setEntityManager($em);
         $metadatas = $cmf->getAllMetadata();

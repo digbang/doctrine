@@ -26,24 +26,6 @@ abstract class AbstractMigrationCommand extends Command
      */
     private $configuration;
 
-    /**
-     * @type EntityManagerInterface
-     */
-    protected $em;
-
-    /**
-     * @type Repository
-     */
-    private $config;
-
-    public function __construct(EntityManagerInterface $em, Repository $config)
-    {
-        parent::__construct();
-
-        $this->em = $em;
-        $this->config = $config;
-    }
-
     protected function outputHeader(Configuration $configuration)
     {
         $name = $configuration->getName();
@@ -61,9 +43,13 @@ abstract class AbstractMigrationCommand extends Command
     }
 
     /**
+     * @param EntityManagerInterface $em
+     * @param Repository             $config
+     *
      * @return Configuration
+     * @throws \Doctrine\DBAL\DBALException
      */
-    protected function getMigrationConfiguration()
+    protected function getMigrationConfiguration(EntityManagerInterface $em, Repository $config)
     {
         if ( ! $this->configuration)
         {
@@ -89,8 +75,8 @@ abstract class AbstractMigrationCommand extends Command
                     }
                     $conn = \Doctrine\DBAL\DriverManager::getConnection($params);
                     break;
-                case $this->em->getConnection():
-                    $conn = $this->em->getConnection();
+                case $em->getConnection():
+                    $conn = $em->getConnection();
                     break;
                 default:
                     // EntityManager is injected, this shouldn't happen in artisan context...
@@ -106,9 +92,9 @@ abstract class AbstractMigrationCommand extends Command
                     $configuration = new $class($conn, $outputWriter);
                     $configuration->load($this->option('configuration'));
                     break;
-                case ($this->config->has('doctrine::doctrine.migrations.directory') && $this->config->has('doctrine::doctrine.migrations.namespace')):
+                case ($config->has('doctrine::doctrine.migrations.directory') && $config->has('doctrine::doctrine.migrations.namespace')):
                     $configuration = new LaravelConfiguration($conn, $outputWriter);
-                    $configuration->load($this->config);
+                    $configuration->load($config);
                     break;
                 case file_exists('migrations.xml'):
                     $configuration = new XmlConfiguration($conn, $outputWriter);

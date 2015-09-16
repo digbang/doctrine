@@ -1,5 +1,7 @@
 <?php namespace Digbang\Doctrine\Commands\Migrations;
 
+use Doctrine\ORM\EntityManagerInterface;
+use Illuminate\Contracts\Config\Repository;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
@@ -44,12 +46,12 @@ EOT
         );
     }
 
-    public function fire()
+    public function handle(EntityManagerInterface $em, Repository $config)
     {
         $version = $this->argument('version');
         $direction = $this->option('down') ? 'down' : 'up';
 
-        $configuration = $this->getMigrationConfiguration();
+        $configuration = $this->getMigrationConfiguration($em, $config);
         $version = $configuration->getVersion($version);
 
         if ($path = $this->option('write-sql')) {

@@ -1,6 +1,8 @@
 <?php namespace Digbang\Doctrine\Commands\Migrations;
 
 use Digbang\Doctrine\Migrations\LaravelConfiguration;
+use Doctrine\ORM\EntityManagerInterface;
+use Illuminate\Contracts\Config\Repository;
 use Symfony\Component\Console\Input\InputOption;
 
 /**
@@ -31,9 +33,9 @@ EOT
         );
     }
 
-    public function fire()
+    public function handle(EntityManagerInterface $em, Repository $config)
     {
-        $configuration = $this->getMigrationConfiguration();
+        $configuration = $this->getMigrationConfiguration($em, $config);
 
         $currentVersion = $configuration->getCurrentVersion();
         if ($currentVersion) {

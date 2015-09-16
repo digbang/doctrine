@@ -31,11 +31,11 @@ class UpdateCommand extends AbstractSchemaCommand
      */
     private $config;
 
-    function __construct(EntityManagerInterface $em, Repository $config)
+    public function handle(EntityManagerInterface $em, Repository $config)
     {
-        parent::__construct($em);
-
         $this->config = $config;
+
+        return parent::handle($em);
     }
 
     /**

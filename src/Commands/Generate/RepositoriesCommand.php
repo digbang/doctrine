@@ -25,17 +25,6 @@ class RepositoriesCommand extends Command
     protected $description = 'Generate repository classes from your mapping information.';
 
     /**
-     * @type EntityManagerInterface
-     */
-    private $em;
-
-    public function __construct(EntityManagerInterface $em)
-    {
-        parent::__construct();
-        $this->em = $em;
-    }
-
-    /**
      * {@inheritdoc}
      */
     protected function configure()
@@ -63,10 +52,8 @@ class RepositoriesCommand extends Command
     /**
      * {@inheritdoc}
      */
-    protected function fire()
+    public function handle(EntityManagerInterface $em)
     {
-        $em = $this->em;
-
         $metadatas = $em->getMetadataFactory()->getAllMetadata();
         $metadatas = MetadataFilter::filter($metadatas, $this->option('filter'));
 

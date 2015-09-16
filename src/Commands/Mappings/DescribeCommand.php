@@ -21,18 +21,6 @@ final class DescribeCommand extends Command
     protected $description = 'Display information about mapped objects';
 
     /**
-     * @type EntityManagerInterface
-     */
-    private $em;
-
-    public function __construct(EntityManagerInterface $em)
-    {
-        parent::__construct();
-
-        $this->em = $em;
-    }
-
-    /**
      * {@inheritdoc}
      */
     protected function configure()
@@ -52,9 +40,9 @@ EOT
     /**
      * {@inheritdoc}
      */
-    protected function fire()
+    public function handle(EntityManagerInterface $em)
     {
-        $this->displayEntity($this->argument('entityName'), $this->em, $this->output);
+        $this->displayEntity($this->argument('entityName'), $em, $this->output);
 
         return 0;
     }

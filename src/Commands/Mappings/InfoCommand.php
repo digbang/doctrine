@@ -20,18 +20,6 @@ class InfoCommand extends Command
     protected $description = 'Show basic information about all mapped entities';
 
     /**
-     * @type EntityManagerInterface
-     */
-    private $em;
-
-    public function __construct(EntityManagerInterface $em)
-    {
-        parent::__construct();
-
-        $this->em = $em;
-    }
-
-    /**
      * {@inheritdoc}
      */
     protected function configure()
@@ -47,11 +35,8 @@ EOT
     /**
      * {@inheritdoc}
      */
-    protected function fire()
+    public function handle(EntityManagerInterface $entityManager)
     {
-        /* @var $entityManager \Doctrine\ORM\EntityManager */
-        $entityManager = $this->em;
-
         $entityClassNames = $entityManager->getConfiguration()
                                           ->getMetadataDriverImpl()
                                           ->getAllClassNames();

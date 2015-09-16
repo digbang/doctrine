@@ -27,18 +27,6 @@ class ConvertCommand extends Command
     protected $description = 'Convert mapping information between supported formats.';
 
     /**
-     * @type EntityManagerInterface
-     */
-    private $em;
-
-    public function __construct(EntityManagerInterface $em)
-    {
-        parent::__construct();
-
-        $this->em = $em;
-    }
-
-    /**
      * {@inheritdoc}
      */
     protected function configure()
@@ -72,10 +60,8 @@ EOT
     /**
      * {@inheritdoc}
      */
-    protected function fire()
+    public function handle(EntityManagerInterface $em)
     {
-        $em = $this->em;
-
         if ($this->option('from-database') === true) {
             $databaseDriver = new DatabaseDriver(
                 $em->getConnection()->getSchemaManager()

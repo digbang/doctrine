@@ -6,22 +6,10 @@ use Illuminate\Console\Command;
 
 abstract class AbstractSchemaCommand extends Command
 {
-    protected $em;
-
-    function __construct(EntityManagerInterface $em)
-    {
-        parent::__construct();
-
-        $this->em = $em;
-    }
-
     abstract protected function executeSchemaCommand(SchemaTool $schemaTool, array $metadatas);
 
-    public function fire()
+    public function handle(EntityManagerInterface $em)
     {
-        /* @var $em \Doctrine\ORM\EntityManager */
-        $em = $this->em;
-
         $metadataFactory = $em->getMetadataFactory();
         $metadataFactory->setCacheDriver(null);
 
