@@ -57,7 +57,7 @@ class TypeExtender
 	 *
 	 * @throws \Doctrine\DBAL\DBALException
 	 */
-	private function apply()
+	public function apply()
 	{
 		foreach ($this->extensions as list($type, $dbType, $class))
 		{
@@ -93,7 +93,6 @@ class TypeExtender
 	 */
 	public function postConnect(ConnectionEventArgs $args)
 	{
-		$this->apply();
 		$this->register($args->getDatabasePlatform());
 	}
 }

@@ -4,6 +4,7 @@ use Digbang\Doctrine\Bridges\CacheBridge;
 use Digbang\Doctrine\Bridges\EventManagerBridge;
 use Digbang\Doctrine\Commands;
 use Digbang\Doctrine\EntityManagerFactory;
+use Digbang\Doctrine\Events\EntityManagerCreated;
 use Digbang\Doctrine\Events\EntityManagerCreating;
 use Digbang\Doctrine\Listeners\DBVersionPersister;
 use Digbang\Doctrine\Listeners\DebugLogging;
@@ -38,7 +39,7 @@ class DoctrineServiceProvider extends ServiceProvider
 
 		$this->registerDoctrineImplementations();
 		$this->registerEntityManager();
-        $this->registerTypes();
+		$this->registerTypes();
 		$this->registerDecoupledMappingDriver();
 	}
 
@@ -73,7 +74,7 @@ class DoctrineServiceProvider extends ServiceProvider
 	private function registerEntityManager()
 	{
 		$this->app->singleton([EntityManagerInterface::class => EntityManager::class], function(Container $app) {
-            return $app->make(EntityManagerFactory::class)->create();
+			return $app->make(EntityManagerFactory::class)->create();
 		});
 	}
 
@@ -128,20 +129,20 @@ class DoctrineServiceProvider extends ServiceProvider
 	/**
 	 * Extend the AuthManager with a Doctrine driver.
 	 */
-    private function extendAuthDriver()
-    {
-	    $this->app->extend('auth', function(\Illuminate\Auth\AuthManager $auth) {
-		    $auth->extend('doctrine', function(Container $container) {
-	            return new DoctrineUserProvider(
-	                $container[Hasher::class],
-	                $container[EntityManager::class],
-	                $container['config']['auth.model']
-	            );
-	        });
+	private function extendAuthDriver()
+	{
+		$this->app->extend('auth', function(\Illuminate\Auth\AuthManager $auth) {
+			$auth->extend('doctrine', function(Container $container) {
+				return new DoctrineUserProvider(
+					$container[Hasher::class],
+					$container[EntityManager::class],
+					$container['config']['auth.model']
+				);
+			});
 
-		    return $auth;
-	    });
-    }
+			return $auth;
+		});
+	}
 
 	/**
 	 * Add doctrine commands to artisan
@@ -207,12 +208,14 @@ class DoctrineServiceProvider extends ServiceProvider
 		$eventManager->addEventListener(Events::onFlush, new SoftDeletableListener);
 		$eventManager->addEventListener(DBALEvents::postConnect, new DBVersionPersister($cache));
 		$eventManager->addEventListener(DBALEvents::postConnect, Types\TypeExtender::instance());
+		$eventManager->addEventListener(EntityManagerCreated::class, function(){
+			Types\TypeExtender::instance()->apply();
+		});
 
 		if ($config->get('app.debug') && isset($this->app['debugbar'])){
-			$eventManager->addEventListener(
-				EntityManagerCreating::class,
-				new DebugLogging($this->app['debugbar'])
-			);
+			$eventManager->addEventListener(EntityManagerCreating::class, function(EntityManagerCreating $event){
+				(new DebugLogging($this->app['debugbar']))->addLoggers($event);
+			});
 		}
 	}
 }
