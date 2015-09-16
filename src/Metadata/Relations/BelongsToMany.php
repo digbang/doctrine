@@ -21,11 +21,6 @@ class BelongsToMany extends Relation
     protected $associationBuilder;
 
     /**
-     * @type \Doctrine\ORM\Mapping\Builder\ManyToManyAssociationBuilder
-     */
-    protected $associationBuilder;
-
-    /**
      * @type array
      */
     private $orderColumns = [];
