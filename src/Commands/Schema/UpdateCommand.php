@@ -27,18 +27,6 @@ class UpdateCommand extends AbstractSchemaCommand
     protected $description = 'Executes (or dumps) the SQL needed to update the database schema to match the current mapping metadata.';
 
     /**
-     * @type Repository
-     */
-    private $config;
-
-    public function handle(EntityManagerInterface $em, Repository $config)
-    {
-        $this->config = $config;
-
-        return parent::handle($em);
-    }
-
-    /**
      * {@inheritdoc}
      */
     protected function configure()
@@ -96,7 +84,7 @@ EOT
     /**
      * {@inheritdoc}
      */
-    protected function executeSchemaCommand(SchemaTool $schemaTool, array $metadatas)
+    protected function executeSchemaCommand(SchemaTool $schemaTool, array $metadatas, Repository $config)
     {
         // Defining if update is complete or not (--complete not defined means $saveMode = true)
         $saveMode = ! $this->option('complete');
@@ -110,7 +98,7 @@ EOT
         }
 
         $dumpSql = true === $this->option('dump-sql');
-        $force   = (true === $this->option('force') || $this->config->get('app.debug'));
+        $force   = (true === $this->option('force') || $config->get('app.debug'));
 
         if ($dumpSql) {
             $this->line(implode(';' . PHP_EOL, $sqls) . ';');

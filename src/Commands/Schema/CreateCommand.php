@@ -17,28 +17,16 @@ use Doctrine\ORM\Tools\SchemaTool;
  */
 class CreateCommand extends AbstractSchemaCommand
 {
-    protected $name = 'doctrine:schema:create';
+	protected $name = 'doctrine:schema:create';
 
-    protected $description = 'Processes the schema and either create it directly on EntityManager Storage Connection or generate the SQL output.';
+	protected $description = 'Processes the schema and either create it directly on EntityManager Storage Connection or generate the SQL output.';
 
-    /**
-     * @type Repository
-     */
-    private $config;
-
-    public function handle(EntityManagerInterface $em, Repository $config)
-    {
-        $this->config = $config;
-
-        return parent::handle($em);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function configure()
-    {
-        $this->setHelp(<<<EOT
+	/**
+	 * {@inheritdoc}
+	 */
+	protected function configure()
+	{
+		$this->setHelp(<<<EOT
 Processes the schema and either create it directly on EntityManager Storage Connection or generate the SQL output.
 
 <comment>Hint:</comment> If you have a database with tables that should not be managed
@@ -47,38 +35,41 @@ on a global level:
 
     \$config->setFilterSchemaAssetsExpression(\$regexp);
 EOT
-        );
-    }
+		);
+	}
 
-    protected function getOptions()
-    {
-        return [
-            [
-                'dump-sql', null, InputOption::VALUE_NONE,
-                'Instead of trying to apply generated SQLs into EntityManager Storage Connection, output them.'
-            ]
-        ];
-    }
+	protected function getOptions()
+	{
+		return [
+			[
+				'dump-sql', null, InputOption::VALUE_NONE,
+				'Instead of trying to apply generated SQLs into EntityManager Storage Connection, output them.',
+			],
+		];
+	}
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function executeSchemaCommand(SchemaTool $schemaTool, array $metadatas)
-    {
-        if ($this->option('dump-sql')) {
-            $sqls = $schemaTool->getCreateSchemaSql($metadatas);
-            $this->line(implode(';' . PHP_EOL, $sqls) . ';');
-        } else {
-            if (! $this->config->get('app.debug'))
-            {
-                $this->line('ATTENTION: This operation should not be executed in a production environment.' . PHP_EOL);
-            }
+	/**
+	 * {@inheritdoc}
+	 */
+	protected function executeSchemaCommand(SchemaTool $schemaTool, array $metadatas, Repository $config)
+	{
+		if ($this->option('dump-sql'))
+		{
+			$sqls = $schemaTool->getCreateSchemaSql($metadatas);
+			$this->line(implode(';' . PHP_EOL, $sqls) . ';');
+		}
+		else
+		{
+			if (!$config->get('app.debug'))
+			{
+				$this->line('ATTENTION: This operation should not be executed in a production environment.' . PHP_EOL);
+			}
 
-            $this->line('Creating database schema...');
-            $schemaTool->createSchema($metadatas);
-            $this->line('Database schema created successfully!');
-        }
+			$this->line('Creating database schema...');
+			$schemaTool->createSchema($metadatas);
+			$this->line('Database schema created successfully!');
+		}
 
-        return 0;
-    }
+		return 0;
+	}
 }
