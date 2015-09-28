@@ -20,7 +20,9 @@ class PaginatorFactory
 			$this->getCount($paginator),
 			$this->getMaxResults($paginator),
 			$this->getCurrentPage($paginator),
-			$options
+			array_merge([
+				'path' => \Illuminate\Pagination\Paginator::resolveCurrentPath()
+			], $options)
 		);
 	}
 
