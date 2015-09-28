@@ -15,13 +15,13 @@ class PaginatorFactory
 	 */
 	public function fromDoctrinePaginator(Paginator $paginator = null, array $options = [])
 	{
-		return new LengthAwarePaginator(
+		return $this->setPathTo(new LengthAwarePaginator(
 			$this->getItems($paginator),
 			$this->getCount($paginator),
 			$this->getMaxResults($paginator),
 			$this->getCurrentPage($paginator),
-			array_merge($this->defaultOptions(), $options)
-		);
+			$options
+		), array_get($options, 'path'));
 	}
 
 	/**
@@ -105,19 +105,20 @@ class PaginatorFactory
 	}
 
 	/**
-	 * @return array
+	 * @param LengthAwarePaginator $paginator
+	 * @param string $path
+	 *
+	 * @return LengthAwarePaginator
 	 */
-	private function defaultOptions()
+	private function setPathTo(LengthAwarePaginator $paginator, $path)
 	{
-		$path = \Illuminate\Pagination\Paginator::resolveCurrentPath();
+		$path = $path ?: \Illuminate\Pagination\Paginator::resolveCurrentPath();
 
 		if ($path != '/')
 		{
 			$path = rtrim($path, '/');
 		}
 
-		return [
-			'path' => $path
-		];
+		return $paginator->setPath($path);
 	}
 }
