@@ -6,7 +6,7 @@ use Doctrine\ORM\Mapping\Builder\ClassMetadataBuilder;
  * Class HasOne
  *
  * @package Digbang\Doctrine\Metadata\Relations
- * @method $this inversedBy($fieldName)
+ * @method $this mappedBy($fieldName)
  */
 class HasOne extends Relation
 {

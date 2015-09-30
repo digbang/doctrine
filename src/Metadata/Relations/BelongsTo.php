@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping\NamingStrategy;
  *
  * @package Digbang\Doctrine\Metadata\Relations
  * @method $this orphanRemoval()
- * @method $this mappedBy($fieldName)
+ * @method $this inversedBy($fieldName)
  */
 class BelongsTo extends Relation
 {
