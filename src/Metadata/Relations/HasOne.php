@@ -10,8 +10,17 @@ use Doctrine\ORM\Mapping\Builder\ClassMetadataBuilder;
  */
 class HasOne extends Relation
 {
+	/**
+	 * @param ClassMetadataBuilder $metadataBuilder
+	 * @param string               $entityName
+	 * @param string               $relation
+	 */
 	public function __construct(ClassMetadataBuilder $metadataBuilder, $entityName, $relation)
 	{
-		$this->associationBuilder = $metadataBuilder->createOneToOne($relation, $entityName);
+		parent::__construct(
+			$metadataBuilder->createOneToOne($relation, $entityName),
+			$metadataBuilder->getClassMetadata(),
+			$relation
+		);
 	}
 }

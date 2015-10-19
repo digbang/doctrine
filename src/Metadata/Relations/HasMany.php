@@ -18,13 +18,22 @@ class HasMany extends Relation
     protected $associationBuilder;
 
 	/**
-	 * @type array
+	 * @type string[]
 	 */
 	private $orderColumns = [];
 
+	/**
+	 * @param ClassMetadataBuilder $metadataBuilder
+	 * @param string               $entityName
+	 * @param string               $relation
+	 */
 	public function __construct(ClassMetadataBuilder $metadataBuilder, $entityName, $relation)
 	{
-		$this->associationBuilder = $metadataBuilder->createOneToMany($relation, $entityName);
+		parent::__construct(
+			$metadataBuilder->createOneToMany($relation, $entityName),
+			$metadataBuilder->getClassMetadata(),
+			$relation
+		);
 	}
 
 	/**
@@ -40,15 +49,5 @@ class HasMany extends Relation
 		$this->associationBuilder->setOrderBy($this->orderColumns);
 
 		return $this;
-	}
-
-	/**
-	 * @return \Doctrine\ORM\Mapping\Builder\OneToManyAssociationBuilder
-	 *
-	 * @deprecated This object now works as a proxy through the magic __call method.
-	 */
-	public function getAssociationBuilder()
-	{
-		return parent::getAssociationBuilder();
 	}
 }

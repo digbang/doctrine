@@ -21,17 +21,30 @@ class BelongsToMany extends Relation
     protected $associationBuilder;
 
     /**
-     * @type array
+     * @type string[]
      */
     private $orderColumns = [];
 
-    function __construct(ClassMetadataBuilder $metadataBuilder, $entityName, $relation)
+    /**
+     * @param ClassMetadataBuilder $metadataBuilder
+     * @param string               $entityName
+     * @param string               $relation
+     */
+    public function __construct(ClassMetadataBuilder $metadataBuilder, $entityName, $relation)
     {
-        $this->associationBuilder = $metadataBuilder->createManyToMany(
-            $relation, $entityName
+        parent::__construct(
+            $metadataBuilder->createManyToMany($relation, $entityName),
+            $metadataBuilder->getClassMetadata(),
+            $relation
         );
     }
 
+    /**
+     * @param string $foreignKey
+     * @param string $references
+     *
+     * @return $this
+     */
     public function foreignKeys($foreignKey, $references = 'id')
     {
         $this->associationBuilder->addJoinColumn($foreignKey, $references, false);
@@ -39,6 +52,12 @@ class BelongsToMany extends Relation
         return $this;
     }
 
+    /**
+     * @param string $inverseKey
+     * @param string $references
+     *
+     * @return $this
+     */
     public function inverseKeys($inverseKey, $references = 'id')
     {
         $this->associationBuilder->addInverseJoinColumn($inverseKey, $references, false);
@@ -59,15 +78,5 @@ class BelongsToMany extends Relation
         $this->associationBuilder->setOrderBy($this->orderColumns);
 
         return $this;
-    }
-
-	/**
-     * @return \Doctrine\ORM\Mapping\Builder\ManyToManyAssociationBuilder
-     *
-     * @deprecated This object now works as a proxy through the magic __call method.
-     */
-    public function getAssociationBuilder()
-    {
-	    return parent::getAssociationBuilder();
     }
 }

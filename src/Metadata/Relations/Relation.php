@@ -1,5 +1,8 @@
 <?php namespace Digbang\Doctrine\Metadata\Relations;
 
+use Doctrine\ORM\Mapping\Builder\AssociationBuilder;
+use Doctrine\ORM\Mapping\ClassMetadataInfo;
+
 /**
  * @method $this cascadeAll()
  * @method $this cascadePersist()
@@ -11,14 +14,37 @@
  * @method $this fetchEager()
  * @method $this fetchLazy()
  * @method $this addJoinColumn($columnName, $referencedColumnName, $nullable = true, $unique = false, $onDelete = null, $columnDef = null)
- * @method $this build()
  */
 abstract class Relation
 {
     /**
-     * @type \Doctrine\ORM\Mapping\Builder\AssociationBuilder
+     * @var \Doctrine\ORM\Mapping\Builder\AssociationBuilder
      */
     protected $associationBuilder;
+
+    /**
+     * @var ClassMetadataInfo
+     */
+    protected $classMetadata;
+
+    /**
+     * @var string
+     */
+    protected $relation;
+
+    /**
+     * Relation constructor.
+     *
+     * @param AssociationBuilder $associationBuilder
+     * @param ClassMetadataInfo  $classMetadata
+     * @param string             $relation
+     */
+    public function __construct(AssociationBuilder $associationBuilder, ClassMetadataInfo $classMetadata, $relation)
+    {
+        $this->associationBuilder = $associationBuilder;
+        $this->classMetadata      = $classMetadata;
+        $this->relation           = $relation;
+    }
 
     /**
      * @return \Doctrine\ORM\Mapping\Builder\AssociationBuilder
@@ -28,6 +54,16 @@ abstract class Relation
     public function getAssociationBuilder()
     {
         return $this->associationBuilder;
+    }
+
+    public function build()
+    {
+        $this->associationBuilder->build();
+
+        if (isset($this->classMetadata->cache))
+        {
+            $this->classMetadata->enableAssociationCache($this->relation, $this->classMetadata->cache);
+        }
     }
 
     /**

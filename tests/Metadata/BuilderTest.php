@@ -2,6 +2,7 @@
 
 use Digbang\Doctrine\LaravelNamingStrategy;
 use Digbang\Doctrine\Metadata\Builder;
+use Digbang\Doctrine\Metadata\Relations\HasMany;
 use Doctrine\ORM\Mapping\Builder\ClassMetadataBuilder;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use Doctrine\ORM\Mapping\NamingStrategy;
@@ -111,5 +112,75 @@ class BuilderTest extends TestCase
 
 		$this->builder->uniqueBelongsTo('foo');
 		$this->builder->uniqueEmbeddable('SomeClass', 'someClass');
+	}
+
+	/** @test */
+	public function it_should_add_association_cache_to_a_relation_between_two_cached_one_to_one_entities()
+	{
+		$this->builder->cacheable(ClassMetadataInfo::CACHE_USAGE_NONSTRICT_READ_WRITE);
+		$this->builder->hasOne('SomeClass', 'someClass');
+
+		$this->assertArrayHasKey(
+			'cache',
+			$this->metadata->associationMappings['someClass']
+		);
+
+		$this->assertEquals(
+			ClassMetadataInfo::CACHE_USAGE_NONSTRICT_READ_WRITE,
+			$this->metadata->associationMappings['someClass']['cache']['usage']
+		);
+	}
+
+	/** @test */
+	public function it_should_add_association_cache_to_a_relation_between_two_cached_one_to_many_entities()
+	{
+		$this->builder->cacheable(ClassMetadataInfo::CACHE_USAGE_NONSTRICT_READ_WRITE);
+		$this->builder->hasMany('SomeClass', 'someClass', function(HasMany $hasMany){
+			$hasMany->mappedBy('some');
+		});
+
+		$this->assertArrayHasKey(
+			'cache',
+			$this->metadata->associationMappings['someClass']
+		);
+
+		$this->assertEquals(
+			ClassMetadataInfo::CACHE_USAGE_NONSTRICT_READ_WRITE,
+			$this->metadata->associationMappings['someClass']['cache']['usage']
+		);
+	}
+
+	/** @test */
+	public function it_should_add_association_cache_to_a_relation_between_two_cached_many_to_one_entities()
+	{
+		$this->builder->cacheable(ClassMetadataInfo::CACHE_USAGE_NONSTRICT_READ_WRITE);
+		$this->builder->belongsTo('SomeClass', 'someClass');
+
+		$this->assertArrayHasKey(
+			'cache',
+			$this->metadata->associationMappings['someClass']
+		);
+
+		$this->assertEquals(
+			ClassMetadataInfo::CACHE_USAGE_NONSTRICT_READ_WRITE,
+			$this->metadata->associationMappings['someClass']['cache']['usage']
+		);
+	}
+
+	/** @test */
+	public function it_should_add_association_cache_to_a_relation_between_two_cached_many_to_many_entities()
+	{
+		$this->builder->cacheable(ClassMetadataInfo::CACHE_USAGE_NONSTRICT_READ_WRITE);
+		$this->builder->belongsToMany('SomeClass', 'someClass');
+
+		$this->assertArrayHasKey(
+			'cache',
+			$this->metadata->associationMappings['someClass']
+		);
+
+		$this->assertEquals(
+			ClassMetadataInfo::CACHE_USAGE_NONSTRICT_READ_WRITE,
+			$this->metadata->associationMappings['someClass']['cache']['usage']
+		);
 	}
 }

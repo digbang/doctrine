@@ -12,6 +12,9 @@ use Doctrine\ORM\Mapping\NamingStrategy;
  */
 class BelongsTo extends Relation
 {
+	/**
+	 * @var array[]
+	 */
 	private $keys = [];
 
 	/**
@@ -20,15 +23,20 @@ class BelongsTo extends Relation
 	private $namingStrategy;
 
 	/**
-	 * @type string
+	 * @param ClassMetadataBuilder $metadataBuilder
+	 * @param NamingStrategy       $namingStrategy
+	 * @param string               $entityName
+	 * @param string               $relation
 	 */
-	private $relation;
-
 	public function __construct(ClassMetadataBuilder $metadataBuilder, NamingStrategy $namingStrategy, $entityName, $relation)
 	{
-		$this->associationBuilder = $metadataBuilder->createManyToOne($relation, $entityName);
+		parent::__construct(
+			$metadataBuilder->createManyToOne($relation, $entityName),
+			$metadataBuilder->getClassMetadata(),
+			$relation
+		);
+
 		$this->namingStrategy = $namingStrategy;
-		$this->relation = $relation;
 	}
 
 	/**
@@ -73,6 +81,6 @@ class BelongsTo extends Relation
 			$this->associationBuilder->addJoinColumn($foreignKey, $otherKey, $nullable);
 		}
 
-		$this->associationBuilder->build();
+		parent::build();
 	}
 }
