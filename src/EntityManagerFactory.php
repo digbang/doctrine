@@ -3,6 +3,7 @@
 use Digbang\Doctrine\Bridges\CacheBridge;
 use Digbang\Doctrine\Bridges\DatabaseConfigurationBridge;
 use Digbang\Doctrine\Bridges\EventManagerBridge;
+use Digbang\Doctrine\Cache\DecoratedCacheFactory;
 use Digbang\Doctrine\Collectors\CacheDataCollector;
 use Digbang\Doctrine\Events\EntityManagerCreated;
 use Digbang\Doctrine\Events\EntityManagerCreating;
@@ -21,7 +22,6 @@ use Doctrine\DBAL\Event\ConnectionEventArgs;
 use Doctrine\DBAL\Events as DBALEvents;
 use Doctrine\DBAL\Logging\DebugStack;
 use Doctrine\ORM\Cache\CacheConfiguration;
-use Doctrine\ORM\Cache\DefaultCacheFactory;
 use Doctrine\ORM\Cache\Logging\StatisticsCacheLogger;
 use Doctrine\ORM\Cache\RegionsConfiguration;
 use Doctrine\ORM\Configuration;
@@ -179,10 +179,11 @@ class EntityManagerFactory
 
 			$cacheConfig = $configuration->getSecondLevelCacheConfiguration();
 
-			$cacheFactory = new DefaultCacheFactory(
+			$cacheFactory = new DecoratedCacheFactory(
 				new RegionsConfiguration,
 				$this->cacheBridge
 			);
+
 			$cacheFactory->setFileLockRegionDirectory($this->config->get('doctrine::doctrine.lock_files.directory'));
 
 			$cacheConfig->setCacheFactory($cacheFactory);
