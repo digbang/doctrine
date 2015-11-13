@@ -69,6 +69,11 @@ class DatabaseConfigurationBridge
 			'charset'  => array_get($configuration, 'charset')
 		];
 
+		if (($port = array_get($configuration, 'port')) !== null)
+		{
+			$config['port'] = $port;
+		}
+
 		if (($serverVersion = array_get($configuration, 'server_version')) !== null)
 		{
 			$config['serverVersion'] = $serverVersion;
