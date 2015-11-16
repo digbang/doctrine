@@ -112,6 +112,8 @@ class EntityManagerFactory
 		$this->fireCreatingEvent($conn, $configuration);
 
 		$entityManager = EntityManager::create($conn, $configuration, $this->eventManagerBridge);
+		TypeExtender::instance()->apply();
+
 		$entityManager->getFilters()->enable('trashed');
 
 		$this->addEventListeners($this->eventManagerBridge);
@@ -256,10 +258,7 @@ class EntityManagerFactory
 		$eventManager->addEventListener(Events::onFlush, new SoftDeletableListener());
 
 		$eventManager->addEventListener(DBALEvents::postConnect, function (ConnectionEventArgs $args) {
-			$typeExtender = TypeExtender::instance();
-
-			$typeExtender->apply();
-			$typeExtender->register($args->getDatabasePlatform());
+			TypeExtender::instance()->register($args->getDatabasePlatform());
 
 			$connection = $args->getConnection();
 			if ($connection instanceof ServerInfoAwareConnection)
