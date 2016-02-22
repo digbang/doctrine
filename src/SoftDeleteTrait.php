@@ -34,4 +34,14 @@ trait SoftDeleteTrait
 	{
 		return $this->deletedAt !== null;
 	}
+	
+	/**
+	 * Restore the entity. Mark it as not deleted.
+	 *
+	 * @return void
+	 */
+	public function restore()
+	{
+		$this->deletedAt = null;
+	}
 }
